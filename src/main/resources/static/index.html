@@ -3,11 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VMD Studio</title>
+    <title>VMD Studio · Dashboard</title>
+    <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<h1>VMD Studio</h1>
-<p>Week 1 Prototype · Spring Boot 서버 연결 확인</p>
-<p>이 화면이 보이면 Frontend(static) 파일이 Spring Boot 서버를 통해 전달되고 있습니다.</p>
+<header id="app-header"></header>
+
+<main class="page">
+    <div class="page-title-row">
+        <h1>DP 작업 목록</h1>
+        <a class="btn btn-primary" href="/setup.html">+ 새 작업 만들기</a>
+    </div>
+
+    <table class="task-table">
+        <thead>
+        <tr>
+            <th>매장명</th>
+            <th>작업명</th>
+            <th>상태</th>
+            <th>수정일</th>
+        </tr>
+        </thead>
+        <tbody id="task-list"></tbody>
+    </table>
+
+    <p class="note">Week 1 Prototype · 예시 데이터</p>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/dashboard.js"></script>
 </body>
 </html>
