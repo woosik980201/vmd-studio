@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMD Studio · DP Plan</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="app-header"></header>
+
+<main class="page">
+    <!-- [Prototype 전용] 보기 상태 미리보기 중일 때만 보인다 -->
+    <section class="prototype-bar" id="prototype-bar" hidden>
+        <span>Prototype · 매장 직원 보기 상태 미리보기 중</span>
+        <button type="button" class="btn" id="back-to-edit-button">작성 상태로 돌아가기</button>
+    </section>
+
+    <div class="page-title-row">
+        <h1>DP Plan</h1>
+    </div>
+
+    <!-- 상태 안내 띠: 작성 상태와 보기 상태에서 문구가 다르다 -->
+    <section class="state-banner" id="state-banner"></section>
+
+    <!-- 이미지 3칸 같은 크기 (Wireframe v0.2 결정) -->
+    <section class="image-grid cols-3">
+        <figure class="image-panel">
+            <figcaption>BEFORE <span class="hint">현재 매장</span></figcaption>
+            <div class="image-placeholder"><span>현재 매장 사진</span></div>
+        </figure>
+        <figure class="image-panel">
+            <figcaption>AI PREVIEW <span class="hint">배치 참고용</span></figcaption>
+            <div class="image-placeholder"><span>채택한 Preview</span></div>
+        </figure>
+        <figure class="image-panel">
+            <figcaption>실제 상품 <span class="hint">SKU 확인 기준</span></figcaption>
+            <div class="image-placeholder"><span>실제 상품 이미지</span></div>
+        </figure>
+    </section>
+
+    <!-- 상품 정보 (+ 작성 상태에서만 VMD 메모) -->
+    <section class="card">
+        <h2 class="section-title">상품 정보</h2>
+        <dl class="info-inline">
+            <div>
+                <dt>상품명</dt>
+                <dd id="plan-product-name"></dd>
+            </div>
+            <div>
+                <dt>품번</dt>
+                <dd id="plan-product-code"></dd>
+            </div>
+            <div>
+                <dt>컬러</dt>
+                <dd id="plan-product-color"></dd>
+            </div>
+        </dl>
+        <div class="memo-row" id="memo-row">
+            <span class="hint">VMD 메모 (내부 참고용 · 매장 직원에게 표시되지 않음)</span>
+            <p class="memo-text" id="vmd-memo"></p>
+        </div>
+    </section>
+
+    <!-- VMD 작업 지시: 작성 상태는 입력 칸, 보기 상태는 일반 글자 -->
+    <section class="card">
+        <h2 class="section-title">VMD 작업 지시</h2>
+        <textarea class="instruction-input" id="instruction-input"
+                  placeholder="매장 직원에게 전달할 작업 내용을 입력하세요."></textarea>
+        <div class="instruction-text" id="instruction-text" hidden></div>
+    </section>
+
+    <section class="notice">
+        Preview는 배치 참고용이며 실제 상품은 상품 이미지와 정보를 기준으로 준비해주세요.
+    </section>
+
+    <!-- 하단 행동 영역: 작성 상태에서만 보인다 -->
+    <section class="action-bar" id="action-bar">
+        <div class="button-group">
+            <a class="btn" id="back-to-preview-link" href="/preview.html">← Preview로</a>
+            <button type="button" class="btn" id="view-preview-button">보기 상태 미리보기</button>
+        </div>
+        <div class="button-group">
+            <button type="button" class="btn" id="complete-button" disabled>작성 완료</button>
+            <button type="button" class="btn btn-primary" id="share-button" disabled>매장에 공유</button>
+        </div>
+    </section>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/sample-data.js"></script>
+<script src="/js/plan.js"></script>
+</body>
+</html>

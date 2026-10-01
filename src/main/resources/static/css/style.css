@@ -415,3 +415,71 @@ h1 {
 .info-inline dd {
     margin: 0;
 }
+
+/* ---------- hidden 속성 보장 ---------- */
+/* display: flex 등을 지정한 클래스가 hidden보다 우선되는 문제를 막는다 */
+[hidden] {
+    display: none !important;
+}
+
+/* ---------- DP Plan ---------- */
+.state-banner {
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.state-banner.is-editing {
+    border: 1px solid #e0c46c;
+    background: #fff8e1;
+}
+
+.state-banner.is-viewing {
+    border: 1px solid #5f9e6e;
+    background: #e7f4ea;
+}
+
+.memo-row {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #eee;
+}
+
+.memo-text {
+    margin: 4px 0 0;
+    font-size: 14px;
+    white-space: pre-wrap;
+}
+
+.instruction-input {
+    width: 100%;
+    min-height: 120px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.instruction-text {
+    padding: 12px;
+    border-radius: 6px;
+    background: #fafafa;
+    font-size: 14px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+}
+
+/* Prototype 전용: 보기 상태 미리보기 중임을 알리는 띠 */
+.prototype-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 16px;
+    border: 1px dashed #999;
+    border-radius: 6px;
+    background: #fff;
+    color: #555;
+    font-size: 13px;
+}
