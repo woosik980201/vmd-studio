@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMD Studio · DP Editor</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="app-header"></header>
+
+<main class="page">
+    <div class="page-title-row">
+        <h1>변경 영역 지정</h1>
+    </div>
+
+    <!-- 안내 문구 (화면 기능 명세 v0.2 확정 문구) -->
+    <section class="notice">
+        교체하거나 배치할 영역을 지정해주세요.<br>
+        영역의 위치와 크기는 Preview 결과에 영향을 줄 수 있습니다.
+    </section>
+
+    <section class="editor-layout">
+        <!-- 왼쪽: 매장 사진 + 지정 영역 -->
+        <div class="card">
+            <div class="photo-canvas" id="photo-canvas">
+                <div class="photo-placeholder">
+            <span>
+              매장 사진 자리 (Week 1 예시)<br>
+              <span class="hint">[임시] 이 영역을 클릭하면 예시 영역이 지정됩니다</span>
+            </span>
+                </div>
+                <div class="region-box" id="region-box" hidden></div>
+            </div>
+        </div>
+
+        <!-- 오른쪽: 적용 상품 (읽기 전용) + 영역 상태 -->
+        <div class="card">
+            <h2 class="section-title">적용 상품</h2>
+            <div class="product-card-image">상품 이미지</div>
+            <dl class="info-list">
+                <dt>상품명</dt>
+                <dd id="product-name"></dd>
+                <dt>품번</dt>
+                <dd id="product-code"></dd>
+                <dt>컬러</dt>
+                <dd id="product-color"></dd>
+            </dl>
+            <p class="hint">상품 수정은 이전 단계(등록)에서 합니다.</p>
+
+            <div class="region-status" id="region-status">영역: 미지정</div>
+        </div>
+    </section>
+
+    <section class="action-bar">
+        <div class="button-group">
+            <a class="btn" id="prev-link" href="/setup.html">← 이전: 등록</a>
+            <button type="button" class="btn" id="reset-button">영역 다시 그리기</button>
+        </div>
+        <button type="button" class="btn btn-primary" id="preview-button" disabled>Preview 생성 →</button>
+    </section>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/sample-data.js"></script>
+<script src="/js/editor.js"></script>
+</body>
+</html>

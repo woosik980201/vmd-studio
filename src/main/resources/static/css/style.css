@@ -242,3 +242,95 @@ h1 {
     justify-content: space-between;
     align-items: center;
 }
+
+/* ---------- DP Editor ---------- */
+.notice {
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    border-left: 4px solid #333;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.editor-layout {
+    display: grid;
+    grid-template-columns: 1fr 280px;
+    gap: 16px;
+}
+
+/* 매장 사진 영역: 영역 상자를 그 위에 겹쳐 놓기 위해 position: relative */
+.photo-canvas {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    border-radius: 6px;
+    background: #e9e9e6;
+    overflow: hidden;
+    cursor: crosshair;
+    user-select: none;
+}
+
+.photo-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #888;
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* 지정된 영역: 위치와 크기는 JavaScript가 % 값으로 정한다 */
+.region-box {
+    position: absolute;
+    border: 2px solid #111;
+    background: rgba(17, 17, 17, 0.15);
+}
+
+.product-card-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 1 / 1;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #f0f0ee;
+    color: #999;
+    font-size: 13px;
+}
+
+.info-list {
+    margin: 0;
+    font-size: 14px;
+}
+
+.info-list dt {
+    font-size: 12px;
+    color: #888;
+}
+
+.info-list dd {
+    margin: 0 0 8px;
+}
+
+.region-status {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #eee;
+    font-size: 14px;
+    color: #888;
+}
+
+.region-status.is-set {
+    color: #111;
+    font-weight: 700;
+}
+
+.button-group {
+    display: flex;
+    gap: 8px;
+}
