@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMD Studio · AI Preview</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="app-header"></header>
+
+<main class="page">
+    <div class="page-title-row">
+        <h1>AI Preview 확인</h1>
+    </div>
+
+    <section class="notice">
+        AI Preview는 배치 참고용입니다.
+    </section>
+
+    <!-- Before | After 같은 크기 -->
+    <section class="image-grid cols-2">
+        <figure class="image-panel">
+            <figcaption>BEFORE <span class="hint">현재 매장</span></figcaption>
+            <div class="image-placeholder">
+                <span>현재 매장 사진</span>
+            </div>
+        </figure>
+        <figure class="image-panel">
+            <figcaption>AFTER <span class="hint">AI Preview</span></figcaption>
+            <div class="image-placeholder">
+          <span>
+            예상 이미지<br>
+            <span class="hint">Week 1: Mock 결과 자리</span>
+          </span>
+            </div>
+        </figure>
+    </section>
+
+    <!-- 생성 조건 요약: 어떤 상품과 영역으로 만든 결과인지 -->
+    <section class="card">
+        <h2 class="section-title">생성 조건</h2>
+        <div class="condition-row">
+            <div class="condition-thumb">상품</div>
+            <dl class="info-inline">
+                <div>
+                    <dt>상품명</dt>
+                    <dd id="product-name"></dd>
+                </div>
+                <div>
+                    <dt>품번</dt>
+                    <dd id="product-code"></dd>
+                </div>
+                <div>
+                    <dt>영역</dt>
+                    <dd>지정됨</dd>
+                </div>
+            </dl>
+        </div>
+    </section>
+
+    <section class="action-bar">
+        <a class="btn" id="edit-link" href="/editor.html">← 영역 수정</a>
+        <button type="button" class="btn btn-primary" id="adopt-button">✓ 이 안 채택하고 DP Plan 작성 →</button>
+    </section>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/sample-data.js"></script>
+<script src="/js/preview.js"></script>
+</body>
+</html>
