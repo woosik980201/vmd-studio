@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VMD Studio · Store Setup</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<header id="app-header"></header>
+
+<main class="page">
+    <div class="page-title-row">
+        <h1>매장 사진과 상품 등록</h1>
+    </div>
+
+    <!-- 매장 정보 -->
+    <section class="card form-row">
+        <div class="field">
+            <label for="store-name">매장</label>
+            <input type="text" id="store-name" placeholder="예: 성수점">
+        </div>
+        <div class="field">
+            <label for="task-name">작업명</label>
+            <input type="text" id="task-name" placeholder="예: 10월 입구 DP 교체">
+        </div>
+    </section>
+
+    <!-- 매장 사진 1장 + 적용 상품 1개 (1 Task 기준) -->
+    <section class="two-column">
+        <div class="card">
+            <h2 class="section-title">현재 매장 사진 <span class="required">*</span></h2>
+            <label class="image-drop" id="store-photo-preview" for="store-photo">
+          <span>
+            클릭해서 현재 VM/DP 사진 선택<br>
+            <span class="hint">jpg · png, 10MB 이하</span>
+          </span>
+            </label>
+            <input type="file" id="store-photo" accept=".jpg,.jpeg,.png" hidden>
+        </div>
+
+        <div class="card">
+            <h2 class="section-title">적용 상품</h2>
+            <div class="product-layout">
+                <div>
+                    <label class="image-drop" id="product-image-preview" for="product-image">
+                        <span>실제 상품<br>이미지 선택 <span class="required">*</span></span>
+                    </label>
+                    <input type="file" id="product-image" accept=".jpg,.jpeg,.png" hidden>
+                </div>
+                <div>
+                    <div class="field">
+                        <label for="product-name">상품명 <span class="required">*</span></label>
+                        <input type="text" id="product-name">
+                    </div>
+                    <div class="field">
+                        <label for="product-code">품번 <span class="required">*</span></label>
+                        <input type="text" id="product-code">
+                    </div>
+                    <div class="field">
+                        <label for="product-color">컬러</label>
+                        <input type="text" id="product-color">
+                    </div>
+                </div>
+            </div>
+            <div class="field">
+                <label for="vmd-memo">VMD 메모 (내부 참고용)</label>
+                <textarea id="vmd-memo" rows="3"></textarea>
+                <span class="hint">내부 참고용 · 매장 직원에게 전달되는 작업 지시와는 별개입니다.</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="action-bar">
+        <a class="btn" href="/">← Dashboard</a>
+        <button type="button" class="btn btn-primary" id="next-button" disabled>다음: 영역 지정 →</button>
+    </section>
+</main>
+
+<script src="/js/common.js"></script>
+<script src="/js/sample-data.js"></script>
+<script src="/js/setup.js"></script>
+</body>
+</html>

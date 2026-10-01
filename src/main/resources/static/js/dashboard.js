@@ -1,12 +1,6 @@
 // Dashboard 화면 동작
-// Week 1: 서버 대신 고정 예시 데이터를 사용한다.
+// Week 1: sample-data.js의 예시 데이터를 사용한다.
 // 나중에 GET /api/tasks 결과로 바꿀 때, 아래 renderTaskList 함수는 그대로 쓴다.
-
-const sampleTasks = [
-    { id: 1, name: '10월 입구 DP 교체', storeName: '성수점', status: 'IN_PROGRESS', step: 'EDITOR', updatedAt: '10/01' },
-    { id: 2, name: '신상 니트 배치', storeName: '더현대 서울', status: 'REVIEWED', step: 'PLAN', updatedAt: '09/30' },
-    { id: 3, name: '가방 진열 변경', storeName: '홍대점', status: 'SHARED', step: 'PLAN', updatedAt: '09/28' }
-];
 
 // 단계 값 → 화면 파일
 const STEP_PAGES = {
