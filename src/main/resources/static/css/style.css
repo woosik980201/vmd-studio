@@ -520,3 +520,40 @@ h1 {
     font-size: 11px;
     font-weight: 700;
 }
+
+/* ---------- 작업 지시 저장 상태 (A안, 10/12) ---------- */
+.save-status {
+    min-height: 18px;
+    margin-top: 6px;
+    font-size: 12px;
+    color: #888;
+}
+
+.save-status.is-dirty {
+    color: #a86b00;
+}
+
+.save-status.is-saved {
+    color: #2e7d4f;
+}
+
+.save-status.is-failed {
+    color: #c0392b;
+}
+
+/* 글자처럼 보이는 버튼 (저장 실패 시 '다시 시도') */
+.link-button {
+    padding: 0;
+    border: none;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.instruction-input:disabled {
+    background: #f4f4f2;
+    color: #999;
+    cursor: not-allowed;
+}
