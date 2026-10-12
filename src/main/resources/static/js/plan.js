@@ -62,7 +62,10 @@ function render() {
 
     // 상단: 보기 상태에서는 단계 표시와 상태 배지를 숨긴다
     if (viewMode) {
-        renderHeader({ taskName: task.name, storeName: task.storeName });
+        // 매장 직원 화면(직원용 주소 / 직원 보기 미리보기)에서는 로고를 눌러도 VMD Dashboard로 가지 않는다
+        // VMD가 연 공유 완료 화면은 로고 링크 유지 (+ 띠의 [← 대시보드로])
+        const isStaffScreen = openedAsViewMode || isPreviewingViewMode;
+        renderHeader({ taskName: task.name, storeName: task.storeName, brandLink: !isStaffScreen });
     } else {
         renderHeader({
             taskName: task.name,
