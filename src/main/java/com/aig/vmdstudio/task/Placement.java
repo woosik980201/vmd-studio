@@ -45,6 +45,13 @@ public class Placement {
                 && x + width <= 1.0001 && y + height <= 1.0001;
     }
 
+    /** 다른 영역과 위치·크기가 같은지 */
+    public boolean sameAs(Placement other) {
+        return other != null
+                && java.util.Objects.equals(x, other.x) && java.util.Objects.equals(y, other.y)
+                && java.util.Objects.equals(width, other.width) && java.util.Objects.equals(height, other.height);
+    }
+
     public Double getX() { return x; }
     public Double getY() { return y; }
     public Double getWidth() { return width; }

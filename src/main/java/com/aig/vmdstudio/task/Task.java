@@ -131,6 +131,51 @@ public class Task {
         }
     }
 
+    // ----- DP Editor -----
+
+    /**
+     * 변경 영역 저장 (1 Task = 영역 1개이므로 항상 덮어쓴다).
+     * 영역이 바뀌면 이전 Preview는 다른 영역으로 만든 결과이므로 지운다.
+     */
+    public void updatePlacement(Placement newPlacement) {
+        requireNotShared();
+        if (newPlacement == null || !newPlacement.hasValidRange()) {
+            throw new IllegalArgumentException("영역 값이 올바르지 않습니다. (0~1 비율, 사진 안쪽)");
+        }
+        if (!newPlacement.sameAs(this.placement)) {
+            clearPreview();
+        }
+        this.placement = newPlacement;
+    }
+
+    // ----- AI Preview -----
+
+    /** Preview 결과 기록. 새로 만든 Preview는 아직 채택되지 않은 상태다 */
+    public void applyPreview(String imageUrl) {
+        requireNotShared();
+        if (!hasImages() || placement == null) {
+            throw new IllegalStateException("매장 사진, 상품 이미지, 영역이 모두 있어야 Preview를 만들 수 있습니다.");
+        }
+        this.previewImageUrl = imageUrl;
+        this.previewAdopted = false;
+        if (this.step == TaskStep.SETUP || this.step == TaskStep.EDITOR) {
+            this.step = TaskStep.PREVIEW;
+        }
+    }
+
+    /**
+     * VMD의 명시적 채택. DP Plan으로 가는 유일한 길 (Wireframe v0.2, Human-in-the-loop).
+     * Preview가 만들어졌다고 자동으로 채택되지 않는다.
+     */
+    public void adoptPreview() {
+        requireNotShared();
+        if (this.previewImageUrl == null) {
+            throw new IllegalStateException("채택할 Preview가 없습니다. 먼저 Preview를 생성해 주세요.");
+        }
+        this.previewAdopted = true;
+        this.step = TaskStep.PLAN;
+    }
+
     public boolean hasImages() {
         return storePhotoFile != null && productImageFile != null;
     }

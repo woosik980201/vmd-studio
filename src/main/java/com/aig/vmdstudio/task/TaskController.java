@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -68,6 +69,24 @@ public class TaskController {
                                @RequestParam(required = false) MultipartFile storePhoto,
                                @RequestParam(required = false) MultipartFile productImage) {
         return TaskResponse.from(taskService.update(id, form.trimmed(), storePhoto, productImage));
+    }
+
+    /** DP Editor: 변경 영역 저장 (JSON, 0~1 비율) */
+    @PutMapping("/{id}/placement")
+    public TaskResponse updatePlacement(@PathVariable Long id, @RequestBody PlacementRequest request) {
+        return TaskResponse.from(taskService.updatePlacement(id, request.toPlacement()));
+    }
+
+    /** AI Preview 생성 (Week 2: Mock 이미지) */
+    @PostMapping("/{id}/preview")
+    public TaskResponse generatePreview(@PathVariable Long id) {
+        return TaskResponse.from(taskService.generatePreview(id));
+    }
+
+    /** AI Preview 채택 → DP Plan 작성 가능 */
+    @PostMapping("/{id}/preview/adopt")
+    public TaskResponse adoptPreview(@PathVariable Long id) {
+        return TaskResponse.from(taskService.adoptPreview(id));
     }
 
     /**

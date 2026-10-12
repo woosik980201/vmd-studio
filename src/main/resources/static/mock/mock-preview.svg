@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <!-- Week 2 Mock Preview 자리 표시 이미지. AnyDoor 사전 실험 #03A 결과 이미지로 교체 예정 -->
+  <rect width="800" height="600" fill="#e3e1dc"/>
+  <rect x="24" y="24" width="752" height="552" fill="none" stroke="#b5b2aa" stroke-width="2" stroke-dasharray="10 8"/>
+  <text x="400" y="280" text-anchor="middle" font-family="sans-serif" font-size="40" font-weight="700" fill="#6b6860">MOCK PREVIEW</text>
+  <text x="400" y="330" text-anchor="middle" font-family="sans-serif" font-size="22" fill="#6b6860">입력과 관계없는 고정 예시 이미지</text>
+  <text x="400" y="365" text-anchor="middle" font-family="sans-serif" font-size="18" fill="#8d8a82">AnyDoor 연동 후 실제 생성 결과로 교체됩니다</text>
+</svg>

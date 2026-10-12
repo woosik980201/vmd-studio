@@ -1,5 +1,7 @@
 package com.aig.vmdstudio.task;
 
+import com.aig.vmdstudio.preview.PreviewGenerator;
+import com.aig.vmdstudio.preview.PreviewRequest;
 import com.aig.vmdstudio.storage.ImageStorageService;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,10 +21,13 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final ImageStorageService imageStorage;
+    private final PreviewGenerator previewGenerator; // 지금은 MockPreviewGenerator가 들어온다
 
-    public TaskService(TaskRepository taskRepository, ImageStorageService imageStorage) {
+    public TaskService(TaskRepository taskRepository, ImageStorageService imageStorage,
+                       PreviewGenerator previewGenerator) {
         this.taskRepository = taskRepository;
         this.imageStorage = imageStorage;
+        this.previewGenerator = previewGenerator;
     }
 
     public List<Task> findAll() {
@@ -79,6 +84,43 @@ public class TaskService {
         }
         task.finishSetup();
         return task; // @Transactional 안에서 바뀐 값은 끝날 때 자동으로 DB에 반영된다
+    }
+
+    /** DP Editor: 변경 영역 저장 */
+    @Transactional
+    public Task updatePlacement(Long id, Placement placement) {
+        Task task = findById(id);
+        task.updatePlacement(placement);
+        return task;
+    }
+
+    /**
+     * AI Preview 생성.
+     * 저장된 매장 사진·상품 이미지·영역을 Preview 엔진에 넘기고, 결과 이미지 주소를 기록한다.
+     * 어떤 엔진(Mock / AnyDoor)이 쓰이는지 이 메서드는 모른다.
+     */
+    @Transactional
+    public Task generatePreview(Long id) {
+        Task task = findById(id);
+        if (!task.hasImages() || task.getPlacement() == null) {
+            throw new IllegalStateException("매장 사진, 상품 이미지, 영역이 모두 있어야 Preview를 만들 수 있습니다.");
+        }
+
+        PreviewRequest request = new PreviewRequest(
+                imageStorage.pathOf(task.getStorePhotoFile()),
+                imageStorage.pathOf(task.getProductImageFile()),
+                task.getPlacement()
+        );
+        task.applyPreview(previewGenerator.generate(request));
+        return task;
+    }
+
+    /** AI Preview: VMD의 명시적 채택 */
+    @Transactional
+    public Task adoptPreview(Long id) {
+        Task task = findById(id);
+        task.adoptPreview();
+        return task;
     }
 
     // ----- 입력 확인 -----

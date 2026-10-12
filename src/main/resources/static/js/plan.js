@@ -147,6 +147,12 @@ async function init() {
     document.getElementById('back-to-preview-link').href = `/preview.html?taskId=${taskId}`;
     instructionInput.value = state.instruction;
 
+    // 이미지 3칸: Before · 채택한 AI Preview(배치 참고용) · 실제 상품(SKU 확인 기준)
+    const [beforeSlot, previewSlot, productSlot] = document.querySelectorAll('.image-grid .image-placeholder');
+    showImage(beforeSlot, task.storePhotoUrl, '현재 매장 사진 (Before)');
+    showImage(previewSlot, task.preview.adopted ? task.preview.imageUrl : null, '채택한 AI Preview');
+    showImage(productSlot, task.product.imageUrl, '실제 상품 이미지');
+
     render();
 }
 

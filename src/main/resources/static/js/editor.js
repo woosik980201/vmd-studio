@@ -1,5 +1,5 @@
 // DP Editor 화면 동작
-// Week 2: 작업 정보를 서버에서 받아온다.
+// Week 2: 저장된 매장 사진 위에 영역을 지정하고, 영역 저장 → Preview 생성을 서버에 요청한다.
 // 영역 지정은 아직 [임시] 클릭 방식. 이후 마우스 드래그로 그리는 방식으로 교체한다.
 
 const taskId = requireTaskId();
@@ -48,10 +48,39 @@ resetButton.addEventListener('click', () => {
     renderPlacement();
 });
 
-previewButton.addEventListener('click', () => {
-    // 다음 단계에서 PUT placement → POST preview 순서로 요청한 뒤 이동하도록 바꾼다.
-    window.location.href = `/preview.html?taskId=${taskId}`;
+// [Preview 생성]: ① 영역 저장 → ② Preview 생성 요청 → ③ Preview 화면으로 이동
+previewButton.addEventListener('click', async () => {
+    previewButton.disabled = true;
+    previewButton.textContent = 'Preview 생성 중...';
+
+    try {
+        await apiRequest(`/api/tasks/${taskId}/placement`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(placement)
+        });
+        await apiRequest(`/api/tasks/${taskId}/preview`, { method: 'POST' });
+        window.location.href = `/preview.html?taskId=${taskId}`;
+    } catch (error) {
+        showError(error);
+        previewButton.textContent = 'Preview 생성 →';
+        renderPlacement();
+    }
 });
+
+// 매장 사진을 보여주고, 캔버스 비율을 사진 비율과 같게 맞춘다
+// 이렇게 해야 화면에서 지정한 영역(0~1 비율)이 실제 사진의 같은 위치를 가리킨다 → 4단계에서 Mask로 변환 가능
+function showStorePhoto(url) {
+    const placeholder = photoCanvas.querySelector('.photo-placeholder');
+    showImage(placeholder, url, '현재 매장 사진');
+
+    const img = placeholder.querySelector('img');
+    if (img) {
+        img.addEventListener('load', () => {
+            photoCanvas.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+        });
+    }
+}
 
 // 서버에서 작업을 받아 화면을 채운다
 async function init() {
@@ -68,6 +97,10 @@ async function init() {
     document.getElementById('product-name').textContent = task.product.name;
     document.getElementById('product-code').textContent = task.product.code;
     document.getElementById('product-color').textContent = task.product.color || '-';
+
+    // 서버에 저장된 이미지 표시 (예시 작업처럼 이미지가 없으면 자리 표시 유지)
+    showStorePhoto(task.storePhotoUrl);
+    showImage(document.querySelector('.product-card-image'), task.product.imageUrl, '실제 상품 이미지');
 
     // 이전 단계로 돌아갈 때도 같은 작업 번호를 유지한다
     document.getElementById('prev-link').href = `/setup.html?taskId=${taskId}`;

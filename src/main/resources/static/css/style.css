@@ -483,3 +483,40 @@ h1 {
     color: #555;
     font-size: 13px;
 }
+/* ---------- Week 2: 서버에 저장된 실제 이미지 표시 ---------- */
+/* 이미지 자리에 실제 이미지가 들어오면 비율을 유지한 채 칸 안에 맞춘다 */
+.image-placeholder img,
+.product-card-image img,
+.condition-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.product-card-image.has-image,
+.condition-thumb.has-image {
+    overflow: hidden;
+    background: #fff;
+}
+
+/* DP Editor: 매장 사진을 캔버스에 꽉 채운다.
+   캔버스 비율을 사진 비율과 같게 맞추므로(editor.js) 영역 좌표(0~1)가 사진 좌표와 그대로 일치한다 */
+.photo-placeholder.has-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    pointer-events: none; /* 클릭은 사진 아래의 캔버스가 받는다 */
+}
+
+/* Mock 단계임을 숨기지 않고 표시한다 */
+.mock-label {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: #f1e7c8;
+    color: #7a5d00;
+    font-size: 11px;
+    font-weight: 700;
+}
