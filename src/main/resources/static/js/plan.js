@@ -3,9 +3,8 @@
 //   - VMD 작성 상태: 작업 지시 작성·수정, [작성 완료], [매장에 공유]
 //   - 매장 직원 보기 상태: 확인만 가능. 단계 표시·상태 배지·VMD 메모·버튼 숨김
 //
-// Week 2: 작업 정보는 서버에서 받아온다.
-// [임시] 상태 전환(작성 완료·공유)은 아직 이 파일 안에서 처리한다. (새로고침하면 서버에 저장된 상태로 돌아감)
-// 다음 단계에서 상태 판단을 Backend(TaskService)로 옮기고, 이 파일은 받은 결과를 render()로 그리기만 한다.
+// Week 2: 작업 지시 저장·작성 완료·공유를 서버에 요청한다.
+// 상태를 바꿀지 판단하는 규칙은 서버(Task.java)에 있고, 이 파일은 서버가 돌려준 결과를 render()로 그리기만 한다.
 
 const taskId = requireTaskId();
 let task = null; // init()에서 서버 데이터로 채운다
@@ -88,38 +87,72 @@ function render() {
 
 // ----- 사용자 행동 -----
 
-// 입력하는 동안: [작성 완료] 활성 여부만 바로 반영한다
+// 서버 요청을 '보낸 순서대로' 하나씩 처리한다.
+// 예: 작업 지시를 입력하고 바로 [작성 완료]를 누르면 '저장 → 작성 완료' 두 요청이 거의 동시에 나간다.
+//     순서가 뒤바뀌면 서버가 "작업 지시가 비어 있음"으로 판단할 수 있어서, 앞 요청이 끝난 뒤 다음 요청을 보낸다.
+let requestQueue = Promise.resolve();
+function runInOrder(job) {
+    requestQueue = requestQueue.then(job, job);
+    return requestQueue;
+}
+
+// 서버가 돌려준 작업으로 화면 상태를 맞춘다 (상태 판단은 서버가 이미 했음)
+function applyServerTask(savedTask) {
+    task = savedTask;
+    state.status = savedTask.status;
+    render();
+}
+
+// 서버에 저장된 작업 지시와 다를 때만 저장 요청을 보낸다
+function saveInstruction() {
+    return runInOrder(async () => {
+        if (state.instruction === task.plan.instruction) {
+            return;
+        }
+        const savedTask = await apiRequest(`/api/tasks/${taskId}/plan/instruction`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ instruction: state.instruction })
+        });
+        applyServerTask(savedTask);
+    });
+}
+
+// 입력하는 동안: [작성 완료] 활성 여부만 바로 반영한다 (저장은 아직 안 함)
 instructionInput.addEventListener('input', () => {
     state.instruction = instructionInput.value;
     render();
 });
 
-// 입력 칸에서 커서가 빠져나갈 때(내용이 바뀐 경우만) = 저장 시점 (blur 저장, Prototype 임시 방식)
-// 검토 완료 상태에서 작업 지시를 고치면 작업 중으로 되돌린다 (Wireframe v0.2 결정)
+// 입력 칸에서 커서가 빠져나갈 때(내용이 바뀐 경우만) = 저장 시점
+// 검토 완료 상태에서 고치면 서버가 '작업 중'으로 되돌린다 (Wireframe v0.2 결정)
 instructionInput.addEventListener('change', () => {
-    // [임시] API 단계: PUT /api/tasks/{id}/plan/instruction → Backend가 상태를 판단
-    if (state.status === 'REVIEWED') {
-        state.status = 'IN_PROGRESS';
-    }
-    render();
+    saveInstruction().catch(showError);
 });
 
+// [작성 완료]: 작업 지시를 먼저 저장한 뒤 작성 완료를 요청한다
 completeButton.addEventListener('click', () => {
-    // [임시] API 단계: POST /api/tasks/{id}/plan/complete
-    // 버튼이 비활성이어도 조건을 한 번 더 확인한다 (서버도 같은 방식으로 다시 검사할 예정)
-    if (state.status === 'IN_PROGRESS' && state.instruction.trim() !== '') {
-        state.status = 'REVIEWED';
-        render();
-    }
+    completeButton.disabled = true;
+    saveInstruction()
+        .then(() => runInOrder(async () => {
+            applyServerTask(await apiRequest(`/api/tasks/${taskId}/plan/complete`, { method: 'POST' }));
+        }))
+        .catch(error => {
+            showError(error);
+            render();
+        });
 });
 
+// [매장에 공유]: 공유 완료가 되면 보기 상태로 바뀌고, 이후에는 수정할 수 없다 (MVP 결정)
 shareButton.addEventListener('click', () => {
-    // [임시] API 단계: POST /api/tasks/{id}/plan/share
-    if (state.status === 'REVIEWED') {
-        state.status = 'SHARED';
+    shareButton.disabled = true;
+    runInOrder(async () => {
         isPreviewingViewMode = false;
-        render(); // 공유 완료 → 보기 상태로 바뀐다. 이후 수정 불가 (MVP 결정)
-    }
+        applyServerTask(await apiRequest(`/api/tasks/${taskId}/plan/share`, { method: 'POST' }));
+    }).catch(error => {
+        showError(error);
+        render();
+    });
 });
 
 // [Prototype 전용] 보기 상태 미리보기 켜기 / 끄기

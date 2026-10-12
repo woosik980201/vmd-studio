@@ -176,6 +176,48 @@ public class Task {
         this.step = TaskStep.PLAN;
     }
 
+    // ----- DP Plan: 상태 전환 규칙 (Week 1에는 plan.js 안에 있던 규칙을 서버로 옮김) -----
+
+    /**
+     * 작업 지시 저장.
+     * 검토 완료 상태에서 작업 지시를 고치면 다시 '작업 중'으로 되돌린다 (Wireframe v0.2 결정)
+     */
+    public void updateInstruction(String text) {
+        requireNotShared();
+        requireAdopted();
+        this.instruction = text == null ? "" : text;
+        if (this.status == TaskStatus.REVIEWED) {
+            this.status = TaskStatus.IN_PROGRESS;
+        }
+    }
+
+    /** 작성 완료: 작업 중이고 작업 지시가 비어 있지 않을 때만 → 검토 완료 */
+    public void completePlan() {
+        requireAdopted();
+        if (this.status != TaskStatus.IN_PROGRESS) {
+            throw new IllegalStateException("작업 중 상태에서만 작성 완료할 수 있습니다.");
+        }
+        if (this.instruction == null || this.instruction.isBlank()) {
+            throw new IllegalStateException("작업 지시를 입력해야 작성 완료할 수 있습니다.");
+        }
+        this.status = TaskStatus.REVIEWED;
+    }
+
+    /** 매장에 공유: 검토 완료일 때만 → 공유 완료. 이후에는 수정할 수 없다 (MVP 결정) */
+    public void sharePlan() {
+        if (this.status != TaskStatus.REVIEWED) {
+            throw new IllegalStateException("검토 완료 상태에서만 매장에 공유할 수 있습니다.");
+        }
+        this.status = TaskStatus.SHARED;
+    }
+
+    /** DP Plan은 VMD가 채택한 Preview가 있어야 작성할 수 있다 */
+    private void requireAdopted() {
+        if (!this.previewAdopted) {
+            throw new IllegalStateException("채택한 Preview가 있어야 DP Plan을 작성할 수 있습니다.");
+        }
+    }
+
     public boolean hasImages() {
         return storePhotoFile != null && productImageFile != null;
     }
@@ -193,10 +235,12 @@ public class Task {
     }
 
     // ----- 예시 데이터(DataInitializer) 전용 -----
+    // DP Plan 단계까지 진행된 예시 작업은 '채택까지 마친 상태'로 본다 (이미지는 없음)
     void setStatusAndStepForSample(TaskStatus status, TaskStep step, String instruction) {
         this.status = status;
         this.step = step;
         this.instruction = instruction;
+        this.previewAdopted = (step == TaskStep.PLAN);
     }
 
     // ----- getter -----

@@ -123,6 +123,30 @@ public class TaskService {
         return task;
     }
 
+    /** DP Plan: 작업 지시 저장 (검토 완료 상태였다면 작업 중으로 되돌아감) */
+    @Transactional
+    public Task updateInstruction(Long id, String instruction) {
+        Task task = findById(id);
+        task.updateInstruction(instruction);
+        return task;
+    }
+
+    /** DP Plan: 작성 완료 → 검토 완료 */
+    @Transactional
+    public Task completePlan(Long id) {
+        Task task = findById(id);
+        task.completePlan();
+        return task;
+    }
+
+    /** DP Plan: 매장에 공유 → 공유 완료 */
+    @Transactional
+    public Task sharePlan(Long id) {
+        Task task = findById(id);
+        task.sharePlan();
+        return task;
+    }
+
     // ----- 입력 확인 -----
 
     private static boolean hasFile(MultipartFile file) {
