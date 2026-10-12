@@ -1,6 +1,14 @@
 // DP Editor 화면 동작
-// Week 2: 저장된 매장 사진 위에 영역을 지정하고, 영역 저장 → Preview 생성을 서버에 요청한다.
-// 영역 지정은 아직 [임시] 클릭 방식. 이후 마우스 드래그로 그리는 방식으로 교체한다.
+// 저장된 매장 사진 위에 VMD가 직접 변경 영역을 그리고, 영역 저장 → Preview 생성을 서버에 요청한다.
+//
+// 영역 지정 방식 (10/12 결정: P0 + P1)
+//   - 그리기  : 사진의 빈 곳을 누른 채 끌기
+//   - 이동    : 영역 안쪽을 누른 채 끌기
+//   - 크기 조절: 네 모서리 핸들을 누른 채 끌기
+//   - 마우스·터치패드·터치를 같은 코드로 처리하기 위해 Pointer Events를 사용한다
+//
+// 좌표는 항상 사진 기준 0~1 비율로 저장한다 (Backend Placement와 같은 구조).
+// 캔버스 비율을 사진 비율과 똑같이 맞추므로, 캔버스 안의 위치 비율 = 사진 안의 위치 비율이다.
 
 const taskId = requireTaskId();
 
@@ -10,12 +18,58 @@ const regionStatus = document.getElementById('region-status');
 const resetButton = document.getElementById('reset-button');
 const previewButton = document.getElementById('preview-button');
 
-// 지정된 영역. Backend의 Placement와 같은 구조로 x, y, width, height를 0~1 비율로 저장한다
-// null이면 영역이 아직 없다는 뜻
+// 너무 작은 영역은 Preview 결과를 판단하기 어려우므로 막는다 (사진 가로·세로의 5% 미만)
+const MIN_SIZE = 0.05;
+
+// 지정된 영역 { x, y, width, height } (0~1 비율). null이면 아직 없음
 let placement = null;
 
-// [임시] Week 1 예시 영역: 사진 가로의 35% 지점부터 30% 너비, 세로의 25% 지점부터 50% 높이
-const SAMPLE_PLACEMENT = { x: 0.35, y: 0.25, width: 0.30, height: 0.50 };
+// 매장 사진이 다 불러와졌는지. 불러오기 전에는 캔버스 비율이 사진과 달라서 그리면 좌표가 어긋난다
+let photoReady = false;
+
+// 지금 진행 중인 끌기 동작. null이면 끌고 있지 않음
+// { mode: 'draw' | 'move' | 'resize', start, anchor, before }
+let drag = null;
+
+// 잠깐 보여줄 안내 문구 (예: 영역이 너무 작음). 다음 동작을 시작하면 지운다
+let warning = '';
+
+// ----- 계산 도우미 -----
+
+function clamp(value, min, max) {
+    return Math.min(Math.max(value, min), max);
+}
+
+// 화면 좌표(마우스 위치) → 캔버스 기준 0~1 비율. 사진 밖으로 끌어도 사진 가장자리에서 멈춘다
+function toPhotoPoint(event) {
+    const rect = photoCanvas.getBoundingClientRect();
+    return {
+        x: clamp((event.clientX - rect.left) / rect.width, 0, 1),
+        y: clamp((event.clientY - rect.top) / rect.height, 0, 1)
+    };
+}
+
+// 두 점을 대각선 끝으로 하는 사각형 (어느 방향으로 끌어도 같은 결과)
+function rectFromPoints(a, b) {
+    return {
+        x: Math.min(a.x, b.x),
+        y: Math.min(a.y, b.y),
+        width: Math.abs(a.x - b.x),
+        height: Math.abs(a.y - b.y)
+    };
+}
+
+// 서버로 보낼 값은 소수점 4자리로 정리한다 (1장 사진 기준 0.01% 단위, 충분히 정밀함)
+function roundPlacement(rect) {
+    const round = value => Math.round(value * 10000) / 10000;
+    return { x: round(rect.x), y: round(rect.y), width: round(rect.width), height: round(rect.height) };
+}
+
+function isTooSmall(rect) {
+    return rect.width < MIN_SIZE || rect.height < MIN_SIZE;
+}
+
+// ----- 화면 그리기 -----
 
 // placement 값에 맞춰 화면(영역 상자, 상태 문구, 버튼)을 다시 그린다
 function renderPlacement() {
@@ -25,28 +79,120 @@ function renderPlacement() {
         regionBox.style.width = `${placement.width * 100}%`;
         regionBox.style.height = `${placement.height * 100}%`;
         regionBox.hidden = false;
-        regionStatus.textContent = '영역: 지정됨';
-        regionStatus.classList.add('is-set');
     } else {
         regionBox.hidden = true;
-        regionStatus.textContent = '영역: 미지정';
-        regionStatus.classList.remove('is-set');
     }
 
-    // [Preview 생성] 활성 조건 (Wireframe v0.2): 영역 1개가 지정되어 있을 것
-    previewButton.disabled = placement === null;
+    if (warning) {
+        regionStatus.textContent = warning;
+        regionStatus.className = 'region-status is-warning';
+    } else if (placement) {
+        regionStatus.textContent = '영역: 지정됨 · 안쪽을 끌면 이동, 모서리를 끌면 크기 조절';
+        regionStatus.className = 'region-status is-set';
+    } else {
+        regionStatus.textContent = photoReady
+            ? '영역: 미지정 · 사진 위를 끌어서 영역을 그려주세요'
+            : '영역: 미지정';
+        regionStatus.className = 'region-status';
+    }
+
+    // [Preview 생성] 활성 조건 (Wireframe v0.2): 영역 1개가 지정되어 있을 것. 끌고 있는 중에는 막는다
+    previewButton.disabled = placement === null || drag !== null;
 }
 
-// [임시] 사진 영역을 클릭하면 예시 영역을 지정한다 (1 Task = 영역 1개이므로 항상 하나로 덮어씀)
-photoCanvas.addEventListener('click', () => {
-    placement = { ...SAMPLE_PLACEMENT };
+// ----- 끌기 동작 (Pointer Events) -----
+
+photoCanvas.addEventListener('pointerdown', event => {
+    // 사진이 준비되지 않았거나, 마우스 오른쪽 버튼 등 주 버튼이 아니면 무시
+    if (!photoReady || event.button !== 0) {
+        return;
+    }
+    warning = '';
+    const point = toPhotoPoint(event);
+    const handle = event.target.dataset.handle; // 모서리 핸들이면 'nw' / 'ne' / 'sw' / 'se'
+    const before = placement ? { ...placement } : null;
+
+    if (handle && placement) {
+        // 크기 조절: 잡은 모서리의 반대쪽 모서리를 고정점으로 두고, 끄는 위치까지 사각형을 다시 만든다
+        const right = placement.x + placement.width;
+        const bottom = placement.y + placement.height;
+        drag = {
+            mode: 'resize',
+            before,
+            anchor: {
+                x: handle.includes('w') ? right : placement.x,
+                y: handle.includes('n') ? bottom : placement.y
+            }
+        };
+    } else if (event.target === regionBox && placement) {
+        // 이동: 처음 누른 위치에서 얼마나 움직였는지만큼 영역을 옮긴다
+        drag = { mode: 'move', before, start: point };
+    } else {
+        // 그리기: 누른 위치를 한쪽 모서리로 새 사각형을 만든다 (1 Task = 영역 1개이므로 기존 영역은 대체)
+        drag = { mode: 'draw', before, start: point };
+    }
+
+    // 끄는 도중 포인터가 캔버스 밖으로 나가도 계속 이벤트를 받도록 붙잡는다
+    photoCanvas.setPointerCapture(event.pointerId);
+    event.preventDefault();
     renderPlacement();
 });
+
+photoCanvas.addEventListener('pointermove', event => {
+    if (!drag) {
+        return;
+    }
+    const point = toPhotoPoint(event);
+
+    if (drag.mode === 'draw') {
+        placement = rectFromPoints(drag.start, point);
+    } else if (drag.mode === 'resize') {
+        placement = rectFromPoints(drag.anchor, point);
+    } else if (drag.mode === 'move') {
+        const origin = drag.before;
+        // 사진 밖으로 나가지 않도록 시작점의 범위를 제한한다
+        placement = {
+            x: clamp(origin.x + (point.x - drag.start.x), 0, 1 - origin.width),
+            y: clamp(origin.y + (point.y - drag.start.y), 0, 1 - origin.height),
+            width: origin.width,
+            height: origin.height
+        };
+    }
+    renderPlacement();
+});
+
+// 손을 뗐을 때: 크기를 확인하고 최종 값을 정리한다
+function finishDrag() {
+    if (!drag) {
+        return;
+    }
+
+    if (placement && isTooSmall(placement)) {
+        const wasJustClick = drag.mode === 'draw' && placement.width < 0.01 && placement.height < 0.01;
+        // 단순 클릭(거의 안 끈 경우)은 조용히 원래대로, 일부러 작게 그렸다면 안내
+        if (!wasJustClick) {
+            warning = '영역이 너무 작습니다. 사진 가로·세로의 5% 이상 크기로 지정해 주세요.';
+        }
+        placement = drag.before; // 이전 영역으로 되돌림 (없었다면 미지정)
+    }
+
+    if (placement) {
+        placement = roundPlacement(placement);
+    }
+    drag = null;
+    renderPlacement();
+}
+
+photoCanvas.addEventListener('pointerup', finishDrag);
+photoCanvas.addEventListener('pointercancel', finishDrag);
 
 resetButton.addEventListener('click', () => {
     placement = null;
+    warning = '';
     renderPlacement();
 });
+
+// ----- Preview 생성 -----
 
 // [Preview 생성]: ① 영역 저장 → ② Preview 생성 요청 → ③ Preview 화면으로 이동
 previewButton.addEventListener('click', async () => {
@@ -68,21 +214,39 @@ previewButton.addEventListener('click', async () => {
     }
 });
 
+// ----- 매장 사진 -----
+
+// 사진이 준비되면 그리기를 허용한다
+function setPhotoReady(ready) {
+    photoReady = ready;
+    photoCanvas.classList.toggle('is-disabled', !ready);
+    renderPlacement();
+}
+
 // 매장 사진을 보여주고, 캔버스 비율을 사진 비율과 같게 맞춘다
 // 이렇게 해야 화면에서 지정한 영역(0~1 비율)이 실제 사진의 같은 위치를 가리킨다 → 4단계에서 Mask로 변환 가능
 function showStorePhoto(url) {
+    if (!url) {
+        document.getElementById('photo-message').textContent =
+            '등록된 매장 사진이 없습니다. 이전 단계(등록)에서 사진을 올려주세요.';
+        return;
+    }
+
     const placeholder = photoCanvas.querySelector('.photo-placeholder');
     showImage(placeholder, url, '현재 매장 사진');
 
     const img = placeholder.querySelector('img');
-    if (img) {
-        img.addEventListener('load', () => {
-            photoCanvas.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
-        });
-    }
+    img.addEventListener('load', () => {
+        photoCanvas.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+        setPhotoReady(true);
+    });
+    img.addEventListener('error', () => {
+        placeholder.innerHTML = '<span>매장 사진을 불러오지 못했습니다. 새로고침해 주세요.</span>';
+        setPhotoReady(false);
+    });
 }
 
-// 서버에서 작업을 받아 화면을 채운다
+// ----- 서버에서 작업을 받아 화면을 채운다 -----
 async function init() {
     const task = await fetchTask(taskId);
 
@@ -98,7 +262,7 @@ async function init() {
     document.getElementById('product-code').textContent = task.product.code;
     document.getElementById('product-color').textContent = task.product.color || '-';
 
-    // 서버에 저장된 이미지 표시 (예시 작업처럼 이미지가 없으면 자리 표시 유지)
+    // 서버에 저장된 이미지 표시 (예시 작업처럼 이미지가 없으면 안내 문구)
     showStorePhoto(task.storePhotoUrl);
     showImage(document.querySelector('.product-card-image'), task.product.imageUrl, '실제 상품 이미지');
 
