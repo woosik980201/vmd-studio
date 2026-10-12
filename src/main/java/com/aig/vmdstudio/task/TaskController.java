@@ -89,6 +89,24 @@ public class TaskController {
         return TaskResponse.from(taskService.adoptPreview(id));
     }
 
+    /** DP Plan: 작업 지시 저장 */
+    @PutMapping("/{id}/plan/instruction")
+    public TaskResponse updateInstruction(@PathVariable Long id, @RequestBody InstructionRequest request) {
+        return TaskResponse.from(taskService.updateInstruction(id, request.instruction()));
+    }
+
+    /** DP Plan: 작성 완료 (작업 중 → 검토 완료) */
+    @PostMapping("/{id}/plan/complete")
+    public TaskResponse completePlan(@PathVariable Long id) {
+        return TaskResponse.from(taskService.completePlan(id));
+    }
+
+    /** DP Plan: 매장에 공유 (검토 완료 → 공유 완료) */
+    @PostMapping("/{id}/plan/share")
+    public TaskResponse sharePlan(@PathVariable Long id) {
+        return TaskResponse.from(taskService.sharePlan(id));
+    }
+
     /**
      * 저장된 이미지 보여주기. kind: store-photo(매장 사진) / product(실제 상품 이미지)
      * 화면의 img 태그가 이 주소를 그대로 사용한다.
