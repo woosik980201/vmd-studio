@@ -4,7 +4,7 @@
 // 영역 지정 방식 (10/12 결정: P0 + P1)
 //   - 그리기  : 사진의 빈 곳을 누른 채 끌기
 //   - 이동    : 영역 안쪽을 누른 채 끌기
-//   - 크기 조절: 네 모서리 핸들을 누른 채 끌기
+//   - 크기 조절: 네 모서리 핸들(가로·세로 함께) 또는 네 변 가운데 핸들(한 방향만)을 누른 채 끌기
 //   - 마우스·터치패드·터치를 같은 코드로 처리하기 위해 Pointer Events를 사용한다
 //
 // 좌표는 항상 사진 기준 0~1 비율로 저장한다 (Backend Placement와 같은 구조).
@@ -28,7 +28,7 @@ let placement = null;
 let photoReady = false;
 
 // 지금 진행 중인 끌기 동작. null이면 끌고 있지 않음
-// { mode: 'draw' | 'move' | 'resize', start, anchor, before }
+// { mode: 'draw' | 'move' | 'resize', start, handle, before }
 let drag = null;
 
 // 잠깐 보여줄 안내 문구 (예: 영역이 너무 작음). 다음 동작을 시작하면 지운다
@@ -65,6 +65,23 @@ function roundPlacement(rect) {
     return { x: round(rect.x), y: round(rect.y), width: round(rect.width), height: round(rect.height) };
 }
 
+// 핸들 방향에 해당하는 변만 point 위치로 옮긴 사각형
+// handle 글자: n=위 변, s=아래 변, w=왼쪽 변, e=오른쪽 변 (모서리는 두 글자, 예: 'ne' = 위 + 오른쪽)
+// 반대쪽 변을 넘어가도록 끌면 rectFromPoints가 방향을 알아서 뒤집어 준다
+function resizeByHandle(rect, handle, point) {
+    let left = rect.x;
+    let right = rect.x + rect.width;
+    let top = rect.y;
+    let bottom = rect.y + rect.height;
+
+    if (handle.includes('w')) left = point.x;
+    if (handle.includes('e')) right = point.x;
+    if (handle.includes('n')) top = point.y;
+    if (handle.includes('s')) bottom = point.y;
+
+    return rectFromPoints({ x: left, y: top }, { x: right, y: bottom });
+}
+
 function isTooSmall(rect) {
     return rect.width < MIN_SIZE || rect.height < MIN_SIZE;
 }
@@ -87,7 +104,7 @@ function renderPlacement() {
         regionStatus.textContent = warning;
         regionStatus.className = 'region-status is-warning';
     } else if (placement) {
-        regionStatus.textContent = '영역: 지정됨 · 안쪽을 끌면 이동, 모서리를 끌면 크기 조절';
+        regionStatus.textContent = '영역: 지정됨 · 안쪽을 끌면 이동, 모서리·변의 핸들을 끌면 크기 조절';
         regionStatus.className = 'region-status is-set';
     } else {
         regionStatus.textContent = photoReady
@@ -113,17 +130,10 @@ photoCanvas.addEventListener('pointerdown', event => {
     const before = placement ? { ...placement } : null;
 
     if (handle && placement) {
-        // 크기 조절: 잡은 모서리의 반대쪽 모서리를 고정점으로 두고, 끄는 위치까지 사각형을 다시 만든다
-        const right = placement.x + placement.width;
-        const bottom = placement.y + placement.height;
-        drag = {
-            mode: 'resize',
-            before,
-            anchor: {
-                x: handle.includes('w') ? right : placement.x,
-                y: handle.includes('n') ? bottom : placement.y
-            }
-        };
+        // 크기 조절: 잡은 핸들이 가리키는 변만 끄는 위치로 옮기고, 나머지 변은 그대로 둔다
+        //   모서리(nw/ne/sw/se) → 가로·세로 두 변이 함께 움직임
+        //   변 가운데(n/s/e/w)  → 한 변만 움직임 (가로 또는 세로 한 방향만 조절)
+        drag = { mode: 'resize', before, handle };
     } else if (event.target === regionBox && placement) {
         // 이동: 처음 누른 위치에서 얼마나 움직였는지만큼 영역을 옮긴다
         drag = { mode: 'move', before, start: point };
@@ -147,7 +157,7 @@ photoCanvas.addEventListener('pointermove', event => {
     if (drag.mode === 'draw') {
         placement = rectFromPoints(drag.start, point);
     } else if (drag.mode === 'resize') {
-        placement = rectFromPoints(drag.anchor, point);
+        placement = resizeByHandle(drag.before, drag.handle, point);
     } else if (drag.mode === 'move') {
         const origin = drag.before;
         // 사진 밖으로 나가지 않도록 시작점의 범위를 제한한다
