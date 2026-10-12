@@ -497,6 +497,10 @@ h1 {
     font-size: 13px;
 }
 
+.owner-bar-done {
+    color: #2f6b3f;
+}
+
 /* ---------- Week 2: 서버에 저장된 실제 이미지 표시 ---------- */
 /* 이미지 자리에 실제 이미지가 들어오면 비율을 유지한 채 칸 안에 맞춘다 */
 .image-placeholder img,

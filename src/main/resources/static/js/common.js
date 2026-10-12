@@ -45,10 +45,16 @@ function renderHeader(options = {}) {
         stepsHtml = `<nav class="steps">${stepItems.join('<span>─</span>')}</nav>`;
     }
 
+    // 로고는 보통 Dashboard로 가는 링크다.
+    // 매장 직원 보기처럼 Dashboard에 갈 필요가 없는 화면은 brandLink: false로 글자만 보여준다 (10/12 결정)
+    const brand = options.brandLink === false
+        ? '<span class="brand">VMD Studio</span>'
+        : '<a class="brand" href="/">VMD Studio</a>';
+
     header.innerHTML = `
     <div class="app-header">
       <div class="header-top">
-        <a class="brand" href="/">VMD Studio</a>
+        ${brand}
         <div class="header-right">${taskInfo}${statusBadge}</div>
       </div>
       ${stepsHtml}
