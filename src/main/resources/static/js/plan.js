@@ -57,8 +57,13 @@ function render() {
 
 
     // 상태 안내 띠: 상단 배지와 같은 상태를 말하도록 작업 상태에 따라 문구를 바꾼다 (10/1 결정)
+    // 채택한 Preview가 없으면(영역·이미지를 바꿔 채택이 풀린 경우) 작성·공유를 진행할 수 없다
+    const isAdopted = task.preview.adopted;
+
     if (viewMode) {
         stateBanner.textContent = '확정된 DP Plan · 확인 전용';
+    } else if (!isAdopted) {
+        stateBanner.textContent = '채택한 Preview가 없습니다 · 영역이나 이미지가 바뀌었다면 Preview 화면에서 다시 채택해 주세요';
     } else if (state.status === 'REVIEWED') {
         stateBanner.textContent = '검토 완료 · 공유 전 (매장 직원에게 아직 보이지 않음)';
     } else {
@@ -69,6 +74,7 @@ function render() {
     // 보기 상태에서 숨기거나 바꾸는 부분
     memoRow.hidden = viewMode;
     instructionInput.hidden = viewMode;
+    instructionInput.disabled = !isAdopted; // 채택이 풀린 상태에서는 서버가 저장을 거부하므로 입력도 막는다
     instructionText.hidden = !viewMode;
     instructionText.textContent = state.instruction.trim() !== ''
         ? state.instruction
@@ -76,13 +82,13 @@ function render() {
     actionBar.hidden = viewMode;
     prototypeBar.hidden = !isPreviewingViewMode;
 
-    // [작성 완료]: 작업 중이고 작업 지시가 비어 있지 않을 때만
-    const canComplete = state.status === 'IN_PROGRESS' && state.instruction.trim() !== '';
+    // [작성 완료]: 채택한 Preview가 있고, 작업 중이고, 작업 지시가 비어 있지 않을 때만
+    const canComplete = isAdopted && state.status === 'IN_PROGRESS' && state.instruction.trim() !== '';
     completeButton.disabled = !canComplete;
     completeButton.textContent = state.status === 'IN_PROGRESS' ? '작성 완료' : '작성 완료 ✓';
 
-    // [매장에 공유]: 검토 완료일 때만
-    shareButton.disabled = state.status !== 'REVIEWED';
+    // [매장에 공유]: 채택한 Preview가 있고 검토 완료일 때만
+    shareButton.disabled = !isAdopted || state.status !== 'REVIEWED';
 }
 
 // ----- 사용자 행동 -----
