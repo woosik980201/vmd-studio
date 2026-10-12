@@ -93,6 +93,60 @@ public class Task {
         this.updatedAt = LocalDateTime.now();
     }
 
+    // ----- Store Setup -----
+
+    /** 등록 정보(글자) 수정. 공유 완료 작업은 수정할 수 없다 (MVP 결정) */
+    public void updateSetupInfo(String name, String storeName,
+                                String productName, String productCode, String productColor, String vmdMemo) {
+        requireNotShared();
+        this.name = name;
+        this.storeName = storeName;
+        this.productName = productName;
+        this.productCode = productCode;
+        this.productColor = productColor;
+        this.vmdMemo = vmdMemo;
+    }
+
+    /**
+     * 매장 사진 교체.
+     * 사진이 바뀌면 이전 Preview는 다른 사진으로 만든 결과가 되므로 지운다.
+     */
+    public void replaceStorePhoto(String fileName) {
+        requireNotShared();
+        this.storePhotoFile = fileName;
+        clearPreview();
+    }
+
+    /** 상품 이미지 교체. 같은 이유로 이전 Preview를 지운다 */
+    public void replaceProductImage(String fileName) {
+        requireNotShared();
+        this.productImageFile = fileName;
+        clearPreview();
+    }
+
+    /** 등록을 마치면 다음 단계(영역 지정)로. 이미 더 뒤 단계에 있었다면 그대로 둔다 */
+    public void finishSetup() {
+        if (this.step == TaskStep.SETUP) {
+            this.step = TaskStep.EDITOR;
+        }
+    }
+
+    public boolean hasImages() {
+        return storePhotoFile != null && productImageFile != null;
+    }
+
+    private void clearPreview() {
+        this.previewImageUrl = null;
+        this.previewAdopted = false;
+    }
+
+    /** 공유 완료 작업을 고치려 하면 오류 (Service에서 409 응답으로 바꾼다) */
+    private void requireNotShared() {
+        if (this.status == TaskStatus.SHARED) {
+            throw new IllegalStateException("공유 완료된 작업은 수정할 수 없습니다.");
+        }
+    }
+
     // ----- 예시 데이터(DataInitializer) 전용 -----
     void setStatusAndStepForSample(TaskStatus status, TaskStep step, String instruction) {
         this.status = status;

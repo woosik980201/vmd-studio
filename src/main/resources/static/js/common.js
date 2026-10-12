@@ -102,6 +102,19 @@ function fetchTask(taskId) {
     return apiRequest(`/api/tasks/${taskId}`);
 }
 
+// 이미지 자리(placeholder)를 실제 이미지로 바꾼다. url이 없으면 자리 표시를 그대로 둔다
+function showImage(container, url, altText) {
+    if (!url) {
+        return;
+    }
+    const img = document.createElement('img');
+    img.src = url;
+    img.alt = altText;
+    container.innerHTML = '';
+    container.appendChild(img);
+    container.classList.add('has-image');
+}
+
 // 오류를 사용자에게 알린다 (Prototype 단계: 간단히 alert)
 function showError(error) {
     console.error(error);

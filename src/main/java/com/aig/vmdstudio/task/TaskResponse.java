@@ -45,17 +45,26 @@ public record TaskResponse(
                 task.getStatus(),
                 task.getStep(),
                 task.getUpdatedAt() == null ? "" : task.getUpdatedAt().format(DATE_FORMAT),
-                task.getStorePhotoFile() == null ? null : base + "store-photo",
+                imageUrl(base + "store-photo", task.getStorePhotoFile()),
                 new Product(
                         task.getProductName(),
                         task.getProductCode(),
                         task.getProductColor(),
                         task.getVmdMemo(),
-                        task.getProductImageFile() == null ? null : base + "product"
+                        imageUrl(base + "product", task.getProductImageFile())
                 ),
                 task.getPlacement(),
                 new Preview(task.getPreviewImageUrl(), task.isPreviewAdopted()),
                 new Plan(task.getInstruction())
         );
+    }
+
+    /**
+     * 이미지가 없으면 null.
+     * 주소 끝에 ?v=파일이름을 붙이는 이유: 이미지를 교체해도 주소가 같으면
+     * 브라우저가 예전 이미지를 캐시에서 보여줄 수 있기 때문이다.
+     */
+    private static String imageUrl(String url, String fileName) {
+        return fileName == null ? null : url + "?v=" + fileName;
     }
 }
