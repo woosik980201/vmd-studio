@@ -15,7 +15,8 @@
     </div>
 
     <section class="notice">
-        AI Preview는 배치 참고용입니다.
+        AI Preview는 배치 참고용입니다.<br>
+        <span class="hint">현재 Mock 단계: 입력과 관계없이 고정된 예시 이미지가 표시됩니다. (AnyDoor 연동 전)</span>
     </section>
 
     <!-- Before | After 같은 크기 -->
@@ -27,12 +28,9 @@
             </div>
         </figure>
         <figure class="image-panel">
-            <figcaption>AFTER <span class="hint">AI Preview</span></figcaption>
+            <figcaption>AFTER <span class="hint">AI Preview</span><span class="mock-label">MOCK</span></figcaption>
             <div class="image-placeholder">
-          <span>
-            예상 이미지<br>
-            <span class="hint">Week 1: Mock 결과 자리</span>
-          </span>
+                <span>예상 이미지</span>
             </div>
         </figure>
     </section>
@@ -53,7 +51,7 @@
                 </div>
                 <div>
                     <dt>영역</dt>
-                    <dd>지정됨</dd>
+                    <dd id="placement-text">-</dd>
                 </div>
             </dl>
         </div>
@@ -66,7 +64,6 @@
 </main>
 
 <script src="/js/common.js"></script>
-<script src="/js/sample-data.js"></script>
 <script src="/js/preview.js"></script>
 </body>
 </html>

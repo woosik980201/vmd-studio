@@ -1,6 +1,5 @@
 // Dashboard 화면 동작
-// Week 1: sample-data.js의 예시 데이터를 사용한다.
-// 나중에 GET /api/tasks 결과로 바꿀 때, 아래 renderTaskList 함수는 그대로 쓴다.
+// Week 2: 서버의 GET /api/tasks 결과로 목록을 그린다. (renderTaskList는 Week 1 코드 그대로)
 
 // 단계 값 → 화면 파일
 const STEP_PAGES = {
@@ -43,4 +42,6 @@ function renderTaskList(tasks) {
 }
 
 renderHeader();
-renderTaskList(sampleTasks);
+apiRequest('/api/tasks')
+    .then(renderTaskList)
+    .catch(showError);
