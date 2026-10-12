@@ -607,6 +607,12 @@ h1 {
 .handle-sw { bottom: -1px; left: -1px; cursor: nesw-resize; }
 .handle-se { bottom: -1px; right: -1px; cursor: nwse-resize; }
 
+/* 변 가운데 핸들: 한 방향으로만 크기 조절 */
+.handle-n { top: -1px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.handle-s { bottom: -1px; left: 50%; transform: translateX(-50%); cursor: ns-resize; }
+.handle-w { left: -1px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+.handle-e { right: -1px; top: 50%; transform: translateY(-50%); cursor: ew-resize; }
+
 .region-status.is-warning {
     color: #c0392b;
     font-weight: 700;
