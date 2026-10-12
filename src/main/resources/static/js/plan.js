@@ -3,11 +3,12 @@
 //   - VMD 작성 상태: 작업 지시 작성·수정, [작성 완료], [매장에 공유]
 //   - 매장 직원 보기 상태: 확인만 가능. 단계 표시·상태 배지·VMD 메모·버튼 숨김
 //
-// [임시] Week 1에는 서버가 없어서 상태 전환을 이 파일 안에서 처리한다. (새로고침하면 처음 상태로 돌아감)
-// API 단계에서는 상태 판단을 Backend(TaskService)로 옮기고, 이 파일은 받은 결과를 render()로 그리기만 한다.
+// Week 2: 작업 정보는 서버에서 받아온다.
+// [임시] 상태 전환(작성 완료·공유)은 아직 이 파일 안에서 처리한다. (새로고침하면 서버에 저장된 상태로 돌아감)
+// 다음 단계에서 상태 판단을 Backend(TaskService)로 옮기고, 이 파일은 받은 결과를 render()로 그리기만 한다.
 
-const taskId = getQueryParam('taskId') || 1;
-const task = findSampleTask(taskId);
+const taskId = requireTaskId();
+let task = null; // init()에서 서버 데이터로 채운다
 
 // ----- 화면 요소 -----
 const prototypeBar = document.getElementById('prototype-bar');
@@ -23,8 +24,8 @@ const shareButton = document.getElementById('share-button');
 // status      : 작업 상태 (IN_PROGRESS / REVIEWED / SHARED)
 // instruction : VMD 작업 지시 (VMD 메모와 별개)
 const state = {
-    status: task.status,
-    instruction: task.plan.instruction
+    status: 'IN_PROGRESS',
+    instruction: ''
 };
 
 // 주소에 mode=view가 있으면 보기 상태로 연다 (Dashboard에서 공유 완료 작업을 열 때)
@@ -38,13 +39,6 @@ function isViewMode() {
     return state.status === 'SHARED' || openedAsViewMode || isPreviewingViewMode;
 }
 
-// ----- 바뀌지 않는 정보는 처음에 한 번만 채운다 -----
-document.getElementById('plan-product-name').textContent = task.product.name;
-document.getElementById('plan-product-code').textContent = task.product.code;
-document.getElementById('plan-product-color').textContent = task.product.color || '-';
-document.getElementById('vmd-memo').textContent = task.product.memo || '-';
-document.getElementById('back-to-preview-link').href = `/preview.html?taskId=${taskId}`;
-instructionInput.value = state.instruction;
 
 // ----- 화면 그리기: state 값만 보고 화면 전체를 맞춘다 -----
 function render() {
@@ -139,4 +133,21 @@ document.getElementById('back-to-edit-button').addEventListener('click', () => {
     render();
 });
 
-render();
+// ----- 서버에서 작업을 받아 화면을 채운다 -----
+async function init() {
+    task = await fetchTask(taskId);
+    state.status = task.status;
+    state.instruction = task.plan.instruction || '';
+
+    // 바뀌지 않는 정보는 처음에 한 번만 채운다
+    document.getElementById('plan-product-name').textContent = task.product.name;
+    document.getElementById('plan-product-code').textContent = task.product.code;
+    document.getElementById('plan-product-color').textContent = task.product.color || '-';
+    document.getElementById('vmd-memo').textContent = task.product.memo || '-';
+    document.getElementById('back-to-preview-link').href = `/preview.html?taskId=${taskId}`;
+    instructionInput.value = state.instruction;
+
+    render();
+}
+
+init().catch(showError);

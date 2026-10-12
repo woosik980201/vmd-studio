@@ -1,29 +1,14 @@
 // DP Editor 화면 동작
-// Week 1 골격: 영역 지정은 [임시] 클릭 방식. Week 2에 마우스 드래그로 그리는 방식으로 교체한다.
+// Week 2: 작업 정보를 서버에서 받아온다.
+// 영역 지정은 아직 [임시] 클릭 방식. 이후 마우스 드래그로 그리는 방식으로 교체한다.
 
-const taskId = getQueryParam('taskId') || 1;
-const task = findSampleTask(taskId);
+const taskId = requireTaskId();
 
 const photoCanvas = document.getElementById('photo-canvas');
 const regionBox = document.getElementById('region-box');
 const regionStatus = document.getElementById('region-status');
 const resetButton = document.getElementById('reset-button');
 const previewButton = document.getElementById('preview-button');
-
-renderHeader({
-    taskName: task.name,
-    storeName: task.storeName,
-    status: task.status,
-    currentStep: 'EDITOR'
-});
-
-// 적용 상품 정보 표시 (textContent는 글자를 그대로 넣으므로 escapeHtml이 필요 없다)
-document.getElementById('product-name').textContent = task.product.name;
-document.getElementById('product-code').textContent = task.product.code;
-document.getElementById('product-color').textContent = task.product.color || '-';
-
-// 이전 단계로 돌아갈 때도 같은 작업 번호를 유지한다
-document.getElementById('prev-link').href = `/setup.html?taskId=${taskId}`;
 
 // 지정된 영역. Backend의 Placement와 같은 구조로 x, y, width, height를 0~1 비율로 저장한다
 // null이면 영역이 아직 없다는 뜻
@@ -64,9 +49,33 @@ resetButton.addEventListener('click', () => {
 });
 
 previewButton.addEventListener('click', () => {
-    // Week 1 골격: 아직 서버에 저장하지 않는다.
-    // API를 연결하면 PUT placement → POST preview 순서로 요청한 뒤 이동한다.
+    // 다음 단계에서 PUT placement → POST preview 순서로 요청한 뒤 이동하도록 바꾼다.
     window.location.href = `/preview.html?taskId=${taskId}`;
 });
 
+// 서버에서 작업을 받아 화면을 채운다
+async function init() {
+    const task = await fetchTask(taskId);
+
+    renderHeader({
+        taskName: task.name,
+        storeName: task.storeName,
+        status: task.status,
+        currentStep: 'EDITOR'
+    });
+
+    // 적용 상품 정보 표시 (textContent는 글자를 그대로 넣으므로 escapeHtml이 필요 없다)
+    document.getElementById('product-name').textContent = task.product.name;
+    document.getElementById('product-code').textContent = task.product.code;
+    document.getElementById('product-color').textContent = task.product.color || '-';
+
+    // 이전 단계로 돌아갈 때도 같은 작업 번호를 유지한다
+    document.getElementById('prev-link').href = `/setup.html?taskId=${taskId}`;
+
+    // 이미 저장된 영역이 있으면 그대로 보여준다
+    placement = task.placement;
+    renderPlacement();
+}
+
 renderPlacement();
+init().catch(showError);

@@ -1,8 +1,7 @@
 // Store Setup 화면 동작
-// Week 1 골격: 입력 확인과 이미지 미리보기까지. 서버 저장은 API 단계에서 추가한다.
+// Week 2: 기존 작업이면 서버에서 받아와 입력 칸을 채운다. 서버 저장은 다음 단계에서 추가한다.
 
-const taskId = getQueryParam('taskId');
-const task = taskId ? findSampleTask(taskId) : null;
+const taskId = getQueryParam('taskId'); // 없으면 새 작업
 
 const storeNameInput = document.getElementById('store-name');
 const taskNameInput = document.getElementById('task-name');
@@ -13,21 +12,29 @@ const productCodeInput = document.getElementById('product-code');
 const productColorInput = document.getElementById('product-color');
 const nextButton = document.getElementById('next-button');
 
-// 새 작업이면 작업명·상태가 아직 없으므로 단계 표시만 나온다
-renderHeader({
-    taskName: task?.name,
-    storeName: task?.storeName,
-    status: task?.status,
-    currentStep: 'SETUP'
-});
+const vmdMemoInput = document.getElementById('vmd-memo');
 
-// 기존 작업이면 예시 데이터로 글자 입력 칸을 채운다 (이미지는 다시 선택해야 함)
-if (task) {
+// 새 작업이면 작업명·상태가 아직 없으므로 단계 표시만 나온다
+renderHeader({ currentStep: 'SETUP' });
+
+// 기존 작업이면 서버 데이터로 글자 입력 칸을 채운다 (이미지는 다시 선택해야 함)
+async function loadExistingTask() {
+    const task = await fetchTask(taskId);
+
+    renderHeader({
+        taskName: task.name,
+        storeName: task.storeName,
+        status: task.status,
+        currentStep: 'SETUP'
+    });
+
     storeNameInput.value = task.storeName;
     taskNameInput.value = task.name;
     productNameInput.value = task.product.name;
     productCodeInput.value = task.product.code;
-    productColorInput.value = task.product.color;
+    productColorInput.value = task.product.color || '';
+    vmdMemoInput.value = task.product.memo || '';
+    updateNextButton();
 }
 
 // [다음] 활성 조건 (Wireframe v0.2): 매장 사진 + 실제 상품 이미지 + 상품명 + 품번
@@ -70,3 +77,7 @@ nextButton.addEventListener('click', () => {
 });
 
 updateNextButton();
+
+if (taskId) {
+    loadExistingTask().catch(showError);
+}

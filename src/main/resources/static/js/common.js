@@ -60,3 +60,50 @@ function renderHeader(options = {}) {
 function getQueryParam(name) {
     return new URLSearchParams(window.location.search).get(name);
 }
+
+// 작업 번호가 꼭 있어야 하는 화면(영역 지정·Preview·DP Plan)에서 사용한다
+// 주소에 taskId가 없으면 어떤 작업인지 알 수 없으므로 Dashboard로 돌려보낸다
+function requireTaskId() {
+    const taskId = getQueryParam('taskId');
+    if (!taskId) {
+        window.location.href = '/';
+    }
+    return taskId;
+}
+
+// ----- 서버(API) 요청 -----
+
+// fetch를 감싼 공통 함수: 실패하면 서버가 보낸 안내 문구로 오류를 만든다
+async function apiRequest(url, options = {}) {
+    const response = await fetch(url, options);
+
+    if (!response.ok) {
+        let message = `요청에 실패했습니다 (${response.status})`;
+        try {
+            const body = await response.json();
+            if (body.message) {
+                message = body.message;
+            }
+        } catch (ignored) {
+            // 응답이 JSON이 아니면 기본 문구를 쓴다
+        }
+        throw new Error(message);
+    }
+
+    // 돌려줄 내용이 없는 응답(204)
+    if (response.status === 204) {
+        return null;
+    }
+    return response.json();
+}
+
+// 작업 1건 가져오기 (Week 1의 findSampleTask를 대신한다)
+function fetchTask(taskId) {
+    return apiRequest(`/api/tasks/${taskId}`);
+}
+
+// 오류를 사용자에게 알린다 (Prototype 단계: 간단히 alert)
+function showError(error) {
+    console.error(error);
+    alert(error.message);
+}
