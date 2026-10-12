@@ -16,6 +16,12 @@
         <button type="button" class="btn" id="back-to-edit-button">작성 상태로 돌아가기</button>
     </section>
 
+    <!-- VMD 전용: 공유 완료 작업을 VMD가 열었을 때만 보인다 (직원용 주소 mode=view에서는 숨김) -->
+    <section class="owner-bar" id="owner-bar" hidden>
+        <span>매장에 공유된 DP Plan입니다 · 수정하려면 공유를 먼저 취소해야 합니다</span>
+        <button type="button" class="btn" id="unshare-button">공유 취소하고 수정</button>
+    </section>
+
     <div class="page-title-row">
         <h1>DP Plan</h1>
     </div>

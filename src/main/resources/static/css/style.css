@@ -483,6 +483,20 @@ h1 {
     color: #555;
     font-size: 13px;
 }
+/* VMD 전용: 공유 완료 작업에서 [공유 취소하고 수정]을 보여주는 띠 */
+.owner-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    color: #555;
+    font-size: 13px;
+}
+
 /* ---------- Week 2: 서버에 저장된 실제 이미지 표시 ---------- */
 /* 이미지 자리에 실제 이미지가 들어오면 비율을 유지한 채 칸 안에 맞춘다 */
 .image-placeholder img,

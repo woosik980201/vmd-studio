@@ -20,6 +20,8 @@ const completeButton = document.getElementById('complete-button');
 const shareButton = document.getElementById('share-button');
 const saveStatus = document.getElementById('save-status');
 const backToPreviewLink = document.getElementById('back-to-preview-link');
+const ownerBar = document.getElementById('owner-bar');
+const unshareButton = document.getElementById('unshare-button');
 
 // ----- 화면 상태 -----
 // status      : 작업 상태 (IN_PROGRESS / REVIEWED / SHARED)
@@ -96,6 +98,11 @@ function render() {
         : '(작성된 작업 지시가 없습니다)';
     actionBar.hidden = viewMode;
     prototypeBar.hidden = !isPreviewingViewMode;
+
+    // [공유 취소하고 수정]: VMD가 공유 완료 작업을 열었을 때만 보인다
+    // 직원용 주소(mode=view)나 미리보기 중에는 숨긴다 → 직원 화면에는 수정 관련 버튼이 하나도 없다
+    ownerBar.hidden = !(state.status === 'SHARED' && !openedAsViewMode && !isPreviewingViewMode);
+    unshareButton.disabled = false;
 
     // [작성 완료]: 채택한 Preview가 있고, 작업 중이고, 작업 지시가 비어 있지 않을 때만
     const canComplete = isAdopted && state.status === 'IN_PROGRESS' && state.instruction.trim() !== '';
@@ -231,7 +238,28 @@ completeButton.addEventListener('click', () => {
         });
 });
 
-// [매장에 공유]: 공유 완료가 되면 보기 상태로 바뀌고, 이후에는 수정할 수 없다 (MVP 결정)
+// [공유 취소하고 수정]: 확인 후 서버에 공유 취소를 요청한다 (10/12 결정, A안)
+// 성공하면 서버가 '작업 중'으로 돌려주므로 render()가 자동으로 작성 상태 화면을 그린다
+unshareButton.addEventListener('click', () => {
+    const ok = window.confirm(
+        '공유를 취소하면 매장 직원 화면에서 이 DP Plan이 내려갑니다.\n' +
+        '수정한 뒤 [작성 완료] → [매장에 공유]를 다시 눌러야 직원에게 보입니다.\n\n공유를 취소할까요?'
+    );
+    if (!ok) {
+        return;
+    }
+    unshareButton.disabled = true;
+    runInOrder(async () => {
+        applyServerTask(await apiRequest(`/api/tasks/${taskId}/plan/unshare`, { method: 'POST' }));
+        saveState = 'clean';
+        renderSaveStatus();
+    }).catch(error => {
+        showError(error);
+        render();
+    });
+});
+
+// [매장에 공유]: 공유 완료가 되면 보기 상태로 바뀐다. 다시 고치려면 [공유 취소하고 수정] (10/12)
 shareButton.addEventListener('click', () => {
     shareButton.disabled = true;
     runInOrder(async () => {
