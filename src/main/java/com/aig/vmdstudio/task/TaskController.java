@@ -107,6 +107,12 @@ public class TaskController {
         return TaskResponse.from(taskService.sharePlan(id));
     }
 
+    /** DP Plan: 공유 취소 (공유 완료 → 작업 중, 다시 수정 가능) */
+    @PostMapping("/{id}/plan/unshare")
+    public TaskResponse unsharePlan(@PathVariable Long id) {
+        return TaskResponse.from(taskService.unsharePlan(id));
+    }
+
     /**
      * 저장된 이미지 보여주기. kind: store-photo(매장 사진) / product(실제 상품 이미지)
      * 화면의 img 태그가 이 주소를 그대로 사용한다.

@@ -18,6 +18,10 @@ const instructionText = document.getElementById('instruction-text');
 const actionBar = document.getElementById('action-bar');
 const completeButton = document.getElementById('complete-button');
 const shareButton = document.getElementById('share-button');
+const saveStatus = document.getElementById('save-status');
+const backToPreviewLink = document.getElementById('back-to-preview-link');
+const ownerBar = document.getElementById('owner-bar');
+const unshareButton = document.getElementById('unshare-button');
 
 // ----- 화면 상태 -----
 // status      : 작업 상태 (IN_PROGRESS / REVIEWED / SHARED)
@@ -26,6 +30,19 @@ const state = {
     status: 'IN_PROGRESS',
     instruction: ''
 };
+
+// ----- 작업 지시 저장 상태 (A안) -----
+// 'clean'  : 서버와 같음 (아무것도 표시하지 않음)
+// 'dirty'  : 화면에서 고쳤지만 아직 서버에 저장되지 않음
+// 'saving' : 저장 요청을 보내는 중
+// 'saved'  : 방금 저장 성공
+// 'failed' : 저장 실패 (다시 시도 필요)
+let saveState = 'clean';
+
+// 화면의 작업 지시가 서버에 저장된 값과 다른지
+function hasUnsavedChanges() {
+    return task !== null && state.instruction !== (task.plan.instruction || '');
+}
 
 // 주소에 mode=view가 있으면 보기 상태로 연다 (Dashboard에서 공유 완료 작업을 열 때)
 const openedAsViewMode = getQueryParam('mode') === 'view';
@@ -57,8 +74,13 @@ function render() {
 
 
     // 상태 안내 띠: 상단 배지와 같은 상태를 말하도록 작업 상태에 따라 문구를 바꾼다 (10/1 결정)
+    // 채택한 Preview가 없으면(영역·이미지를 바꿔 채택이 풀린 경우) 작성·공유를 진행할 수 없다
+    const isAdopted = task.preview.adopted;
+
     if (viewMode) {
         stateBanner.textContent = '확정된 DP Plan · 확인 전용';
+    } else if (!isAdopted) {
+        stateBanner.textContent = '채택한 Preview가 없습니다 · 영역이나 이미지가 바뀌었다면 Preview 화면에서 다시 채택해 주세요';
     } else if (state.status === 'REVIEWED') {
         stateBanner.textContent = '검토 완료 · 공유 전 (매장 직원에게 아직 보이지 않음)';
     } else {
@@ -69,6 +91,7 @@ function render() {
     // 보기 상태에서 숨기거나 바꾸는 부분
     memoRow.hidden = viewMode;
     instructionInput.hidden = viewMode;
+    instructionInput.disabled = !isAdopted; // 채택이 풀린 상태에서는 서버가 저장을 거부하므로 입력도 막는다
     instructionText.hidden = !viewMode;
     instructionText.textContent = state.instruction.trim() !== ''
         ? state.instruction
@@ -76,13 +99,48 @@ function render() {
     actionBar.hidden = viewMode;
     prototypeBar.hidden = !isPreviewingViewMode;
 
-    // [작성 완료]: 작업 중이고 작업 지시가 비어 있지 않을 때만
-    const canComplete = state.status === 'IN_PROGRESS' && state.instruction.trim() !== '';
+    // [공유 취소하고 수정]: VMD가 공유 완료 작업을 열었을 때만 보인다
+    // 직원용 주소(mode=view)나 미리보기 중에는 숨긴다 → 직원 화면에는 수정 관련 버튼이 하나도 없다
+    ownerBar.hidden = !(state.status === 'SHARED' && !openedAsViewMode && !isPreviewingViewMode);
+    unshareButton.disabled = false;
+
+    // [작성 완료]: 채택한 Preview가 있고, 작업 중이고, 작업 지시가 비어 있지 않을 때만
+    const canComplete = isAdopted && state.status === 'IN_PROGRESS' && state.instruction.trim() !== '';
     completeButton.disabled = !canComplete;
     completeButton.textContent = state.status === 'IN_PROGRESS' ? '작성 완료' : '작성 완료 ✓';
 
-    // [매장에 공유]: 검토 완료일 때만
-    shareButton.disabled = state.status !== 'REVIEWED';
+    // [매장에 공유]: 채택한 Preview가 있고 검토 완료일 때만
+    shareButton.disabled = !isAdopted || state.status !== 'REVIEWED';
+
+    renderSaveStatus();
+}
+
+// 저장 상태 표시를 그린다. 보기 상태에서는 입력 칸이 없으므로 숨긴다
+function renderSaveStatus() {
+    saveStatus.hidden = isViewMode();
+    saveStatus.className = `save-status is-${saveState}`;
+
+    const messages = {
+        clean: '',
+        dirty: '● 저장되지 않은 변경 있음 · 입력 칸 바깥을 클릭하면 저장됩니다',
+        saving: '저장 중...',
+        saved: '✓ 저장됨',
+        failed: '저장 실패 · '
+    };
+    saveStatus.textContent = messages[saveState];
+
+    // 실패했을 때는 같은 내용으로 다시 보낼 수 있는 버튼을 붙인다
+    // (내용이 그대로면 입력 칸의 change 이벤트가 다시 일어나지 않기 때문)
+    if (saveState === 'failed') {
+        const retryButton = document.createElement('button');
+        retryButton.type = 'button';
+        retryButton.className = 'link-button';
+        retryButton.textContent = '다시 시도';
+        retryButton.addEventListener('click', () => {
+            saveInstruction().catch(() => {});
+        });
+        saveStatus.appendChild(retryButton);
+    }
 }
 
 // ----- 사용자 행동 -----
@@ -106,28 +164,65 @@ function applyServerTask(savedTask) {
 // 서버에 저장된 작업 지시와 다를 때만 저장 요청을 보낸다
 function saveInstruction() {
     return runInOrder(async () => {
-        if (state.instruction === task.plan.instruction) {
+        if (!hasUnsavedChanges()) {
             return;
         }
-        const savedTask = await apiRequest(`/api/tasks/${taskId}/plan/instruction`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ instruction: state.instruction })
-        });
-        applyServerTask(savedTask);
+        saveState = 'saving';
+        renderSaveStatus();
+        try {
+            const savedTask = await apiRequest(`/api/tasks/${taskId}/plan/instruction`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ instruction: state.instruction })
+            });
+            applyServerTask(savedTask);
+            // 저장하는 사이에 더 입력했다면 아직 '저장 안 됨'이다
+            saveState = hasUnsavedChanges() ? 'dirty' : 'saved';
+        } catch (error) {
+            saveState = 'failed';
+            throw error;
+        } finally {
+            renderSaveStatus();
+        }
     });
 }
 
-// 입력하는 동안: [작성 완료] 활성 여부만 바로 반영한다 (저장은 아직 안 함)
+// 입력하는 동안: [작성 완료] 활성 여부와 '저장되지 않은 변경' 표시만 바로 반영한다 (저장은 아직 안 함)
 instructionInput.addEventListener('input', () => {
     state.instruction = instructionInput.value;
+    if (hasUnsavedChanges()) {
+        saveState = 'dirty';
+    } else if (saveState === 'dirty') {
+        saveState = 'clean'; // 고쳤다가 원래대로 되돌린 경우
+    }
     render();
 });
 
-// 입력 칸에서 커서가 빠져나갈 때(내용이 바뀐 경우만) = 저장 시점
+// 입력 칸에서 커서가 빠져나갈 때(내용이 바뀐 경우만) = 저장 시점 (blur 저장 유지, 10/12 결정)
 // 검토 완료 상태에서 고치면 서버가 '작업 중'으로 되돌린다 (Wireframe v0.2 결정)
+// 실패하면 알림창 대신 입력 칸 아래에 '저장 실패 · 다시 시도'를 보여준다
 instructionInput.addEventListener('change', () => {
-    saveInstruction().catch(showError);
+    saveInstruction().catch(() => {});
+});
+
+// [← Preview로]: 저장 중이거나 저장 안 된 내용이 있으면 먼저 저장한 뒤 이동한다
+backToPreviewLink.addEventListener('click', event => {
+    event.preventDefault();
+    const target = backToPreviewLink.href;
+    // saveInstruction은 대기열 맨 뒤에 붙으므로, 앞서 보낸 저장 요청까지 모두 끝난 뒤에 이동한다
+    saveInstruction()
+        .then(() => { window.location.href = target; })
+        .catch(() => {
+            // 저장에 실패하면 이동하지 않고 화면에 남는다 (입력 칸 아래 '저장 실패' 표시)
+        });
+});
+
+// 새로고침·탭 닫기·다른 주소로 이동할 때 저장되지 않은 내용이 있으면 브라우저가 확인창을 띄운다
+window.addEventListener('beforeunload', event => {
+    if (hasUnsavedChanges() || saveState === 'saving') {
+        event.preventDefault();
+        event.returnValue = ''; // 일부 브라우저는 이 값이 있어야 확인창을 띄운다
+    }
 });
 
 // [작성 완료]: 작업 지시를 먼저 저장한 뒤 작성 완료를 요청한다
@@ -143,7 +238,28 @@ completeButton.addEventListener('click', () => {
         });
 });
 
-// [매장에 공유]: 공유 완료가 되면 보기 상태로 바뀌고, 이후에는 수정할 수 없다 (MVP 결정)
+// [공유 취소하고 수정]: 확인 후 서버에 공유 취소를 요청한다 (10/12 결정, A안)
+// 성공하면 서버가 '작업 중'으로 돌려주므로 render()가 자동으로 작성 상태 화면을 그린다
+unshareButton.addEventListener('click', () => {
+    const ok = window.confirm(
+        '공유를 취소하면 매장 직원 화면에서 이 DP Plan이 내려갑니다.\n' +
+        '수정한 뒤 [작성 완료] → [매장에 공유]를 다시 눌러야 직원에게 보입니다.\n\n공유를 취소할까요?'
+    );
+    if (!ok) {
+        return;
+    }
+    unshareButton.disabled = true;
+    runInOrder(async () => {
+        applyServerTask(await apiRequest(`/api/tasks/${taskId}/plan/unshare`, { method: 'POST' }));
+        saveState = 'clean';
+        renderSaveStatus();
+    }).catch(error => {
+        showError(error);
+        render();
+    });
+});
+
+// [매장에 공유]: 공유 완료가 되면 보기 상태로 바뀐다. 다시 고치려면 [공유 취소하고 수정] (10/12)
 shareButton.addEventListener('click', () => {
     shareButton.disabled = true;
     runInOrder(async () => {
@@ -177,7 +293,7 @@ async function init() {
     document.getElementById('plan-product-code').textContent = task.product.code;
     document.getElementById('plan-product-color').textContent = task.product.color || '-';
     document.getElementById('vmd-memo').textContent = task.product.memo || '-';
-    document.getElementById('back-to-preview-link').href = `/preview.html?taskId=${taskId}`;
+    backToPreviewLink.href = `/preview.html?taskId=${taskId}`;
     instructionInput.value = state.instruction;
 
     // 이미지 3칸: Before · 채택한 AI Preview(배치 참고용) · 실제 상품(SKU 확인 기준)

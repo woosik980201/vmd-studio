@@ -23,14 +23,17 @@
     <section class="editor-layout">
         <!-- 왼쪽: 매장 사진 + 지정 영역 -->
         <div class="card">
-            <div class="photo-canvas" id="photo-canvas">
+            <div class="photo-canvas is-disabled" id="photo-canvas">
                 <div class="photo-placeholder">
-            <span>
-              매장 사진 자리 (Week 1 예시)<br>
-              <span class="hint">[임시] 이 영역을 클릭하면 예시 영역이 지정됩니다</span>
-            </span>
+                    <span id="photo-message">매장 사진 불러오는 중...</span>
                 </div>
-                <div class="region-box" id="region-box" hidden></div>
+                <!-- 지정한 영역: 안쪽을 끌면 이동, 네 모서리를 끌면 크기 조절 -->
+                <div class="region-box" id="region-box" hidden>
+                    <span class="region-handle handle-nw" data-handle="nw"></span>
+                    <span class="region-handle handle-ne" data-handle="ne"></span>
+                    <span class="region-handle handle-sw" data-handle="sw"></span>
+                    <span class="region-handle handle-se" data-handle="se"></span>
+                </div>
             </div>
         </div>
 
