@@ -204,7 +204,7 @@ public class Task {
     }
 
     /**
-     * 매장에 공유: 검토 완료일 때만 → 공유 완료. 이후에는 수정할 수 없다 (MVP 결정)
+     * 매장에 공유: 검토 완료일 때만 → 공유 완료. 공유 중에는 수정할 수 없다 (MVP 결정, 고치려면 unsharePlan)
      * 채택한 Preview가 없는 계획은 공유하지 않는다 (VMD가 고르지 않은 안이 직원에게 가는 것을 막는 안전장치)
      */
     public void sharePlan() {
@@ -213,6 +213,20 @@ public class Task {
             throw new IllegalStateException("검토 완료 상태에서만 매장에 공유할 수 있습니다.");
         }
         this.status = TaskStatus.SHARED;
+    }
+
+    /**
+     * 공유 취소: 공유 완료 → 작업 중 (10/12 결정, A안).
+     * 공유 후 잠금은 유지하되, VMD가 직접 공유를 거둬들이면 다시 고칠 수 있게 한다.
+     *  - 작업 지시·채택한 Preview·영역은 그대로 남긴다 (고칠 부분만 고치면 되도록)
+     *  - '작업 중'으로 돌아가므로 다시 [작성 완료] → [매장에 공유]를 거쳐야 직원에게 보인다
+     *  - 이전에 공유했던 내용은 따로 보관하지 않는다 (수정본·이력은 공유 방식이 정해진 뒤 검토, B안)
+     */
+    public void unsharePlan() {
+        if (this.status != TaskStatus.SHARED) {
+            throw new IllegalStateException("공유 완료된 작업만 공유를 취소할 수 있습니다.");
+        }
+        this.status = TaskStatus.IN_PROGRESS;
     }
 
     /** DP Plan은 VMD가 채택한 Preview가 있어야 작성할 수 있다 */

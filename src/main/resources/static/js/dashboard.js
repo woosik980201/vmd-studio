@@ -10,12 +10,11 @@ const STEP_PAGES = {
 };
 
 // 기존 작업을 열 때 어느 화면으로 갈지 정한다 (Wireframe v0.2 결정)
-// 공유 완료 → DP Plan 보기 상태 / 검토 완료 → DP Plan 작성 상태 / 작업 중 → 마지막으로 머문 화면
+// 공유 완료·검토 완료 → DP Plan / 작업 중 → 마지막으로 머문 화면
+// 공유 완료 작업은 DP Plan이 알아서 보기 상태로 그린다.
+// Dashboard는 VMD 화면이므로 mode=view(직원용 주소)를 붙이지 않는다 → [공유 취소하고 수정]이 보인다 (10/12)
 function getTaskUrl(task) {
-    if (task.status === 'SHARED') {
-        return `/plan.html?taskId=${task.id}&mode=view`;
-    }
-    if (task.status === 'REVIEWED') {
+    if (task.status === 'SHARED' || task.status === 'REVIEWED') {
         return `/plan.html?taskId=${task.id}`;
     }
     return `/${STEP_PAGES[task.step]}?taskId=${task.id}`;

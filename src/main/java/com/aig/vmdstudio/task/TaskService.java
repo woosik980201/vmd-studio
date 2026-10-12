@@ -147,6 +147,14 @@ public class TaskService {
         return task;
     }
 
+    /** DP Plan: 공유 취소 → 작업 중 (다시 수정 가능) */
+    @Transactional
+    public Task unsharePlan(Long id) {
+        Task task = findById(id);
+        task.unsharePlan();
+        return task;
+    }
+
     // ----- 입력 확인 -----
 
     private static boolean hasFile(MultipartFile file) {
