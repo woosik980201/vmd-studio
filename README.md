@@ -46,19 +46,19 @@ Dashboard → Store Setup → DP Editor → AI Preview → [채택] → DP Plan 
 Spring Boot (:8080) ── H2 (data/) · 이미지 파일 (uploads/)
    │
    └─ PreviewGenerator (인터페이스)
-        ├─ MockPreviewGenerator      현재 사용 중 (고정 예시 이미지)
-        └─ AnyDoorPreviewGenerator   다음 단계 ──HTTP──▶ AI Preview Server (FastAPI, :8000)
+        ├─ AnyDoorPreviewGenerator   기본 (engine=anydoor) ──HTTP──▶ AI Preview Server (FastAPI, :8000)
+        └─ MockPreviewGenerator      engine=mock (GPU 없는 PC에서 화면 흐름 확인용)
                                                           └─ AnyDoor (PyTorch, RTX 3080)
 ```
 
-AI 부분을 `PreviewGenerator`로 분리해 두어, AnyDoor를 붙일 때 서비스 전체를 다시 만들지 않고 구현체만 추가합니다.
+AI 부분을 `PreviewGenerator`로 분리해 두어(D9), 10/29 AnyDoor 연결 때 TaskService·화면을 고치지 않고 구현체만 추가했습니다. 어느 엔진을 쓸지는 `application.properties`의 `vmd.preview.engine`(anydoor / mock)으로 정합니다.
 
 ## 폴더
 
 | 경로 | 내용 |
 | --- | --- |
 | `src/main/java/com/aig/vmdstudio/task` | 작업(Task) 저장·상태 규칙·REST API |
-| `src/main/java/com/aig/vmdstudio/preview` | `PreviewGenerator` 인터페이스와 Mock 구현 |
+| `src/main/java/com/aig/vmdstudio/preview` | `PreviewGenerator` 인터페이스, AnyDoor·Mock 구현, 생성 결과 이미지 제공 |
 | `src/main/java/com/aig/vmdstudio/storage` | 업로드 이미지 저장 |
 | `src/main/resources/static` | 화면 5개 (HTML/CSS/JS) |
 | `ai-server/vmd_ai_server.py` | AnyDoor 전용 Python API 서버 |
@@ -70,6 +70,7 @@ AI 부분을 `PreviewGenerator`로 분리해 두어, AnyDoor를 붙일 때 서�
 
 - 처음 실행하면 예시 작업 3개가 들어갑니다. 처음 상태로 되돌리려면 서버를 끄고 `data/` 폴더를 지웁니다.
 - 업로드 이미지(`uploads/`)와 DB(`data/`)는 Git에 올라가지 않습니다.
+- 기본 엔진은 AnyDoor라서 AI Preview 서버를 먼저 켜야 Preview를 만들 수 있습니다. 꺼져 있으면 화면에 안내가 뜹니다. GPU가 없는 PC에서는 `vmd.preview.engine=mock`으로 바꿔 실행합니다.
 
 **AI Preview 서버 (AnyDoor)** — NVIDIA GPU와 AnyDoor 실행 환경(모델 가중치 포함)이 있는 PC에서만 동작합니다.
 
@@ -83,7 +84,7 @@ python vmd_ai_server.py
 - AnyDoor 폴더 위치가 다르면 환경 변수 `ANYDOOR_DIR`을 지정합니다.
 - Gradio 데모와 동시에 켜지 않습니다 (GPU 메모리 10GB가 이미 빠듯함).
 
-## 현재 상태 (2026-10-27)
+## 현재 상태 (2026-10-29)
 
 | 단계 | 상태 |
 | --- | --- |
@@ -91,14 +92,15 @@ python vmd_ai_server.py
 | Week 1 Click Prototype (화면 5개) | ✅ 10/01 |
 | Week 2 Spring Boot Backend 연결 (PR #1~#6) | ✅ 10/12 |
 | AnyDoor AI Preview 서버 (PR #7) | ✅ 10/27 — Swagger에서 생성 성공, 약 2분 30초~3분 |
-| Spring ↔ AI 서버 연결 | 🔜 다음 단계 |
+| Spring ↔ AI 서버 연결 (PR #9) | ✅ 10/29 — 화면의 [Preview 생성]으로 실제 AnyDoor Preview, 약 2분 30초 |
+| 품질 실험 (원피스 현상 가설 검증) | 🔜 다음 단계 |
 
-**아직 아닌 것** — 웹 화면의 AI Preview는 아직 Mock입니다. 생성 속도 개선(fp16), 실제 공유 전달 방식(링크·Band 등)은 미구현입니다.
+**아직 아닌 것** — 생성 속도 개선(fp16), 실제 공유 전달 방식(링크·Band 등)은 미구현입니다. 좁고 긴 영역에서 상품이 길게 늘어나는 현상은 원인 검증 전입니다.
 
 ## 기록
 
 - [개발 기록 (docs/devlog)](docs/devlog/) — 날짜별로 무엇을 했고, 왜 그렇게 판단했고, 무엇이 실패했는지
-- [주요 결정 (docs/decisions.md)](docs/decisions.md) — D1~D21
+- [주요 결정 (docs/decisions.md)](docs/decisions.md) — D1~D23
 - 상세 기록·캡처는 프로젝트 Notion에 있습니다 (비공개). 매장 사진이 포함된 캡처는 공개 가능 여부 확인 전까지 저장소에 올리지 않습니다.
 
 ## AI 활용
