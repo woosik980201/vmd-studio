@@ -1,6 +1,6 @@
 // AI Preview 화면 동작
-// Week 2: 서버에 기록된 Preview 결과를 보여준다.
-// 지금 결과 이미지는 MockPreviewGenerator가 돌려준 고정 예시 이미지다 (입력과 무관).
+// 서버에 기록된 Preview 결과를 보여준다.
+// 결과 이미지는 설정(vmd.preview.engine)에 따라 AnyDoor 생성 결과 또는 Mock 예시 이미지다.
 
 const taskId = requireTaskId();
 const adoptButton = document.getElementById('adopt-button');
