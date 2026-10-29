@@ -16,7 +16,7 @@
 
     <section class="notice">
         AI Preview는 배치 참고용입니다.<br>
-        <span class="hint">현재 Mock 단계: 입력과 관계없이 고정된 예시 이미지가 표시됩니다. (AnyDoor 연동 전)</span>
+        <span class="hint" id="engine-notice"></span>
     </section>
 
     <!-- Before | After 같은 크기 -->
@@ -28,7 +28,7 @@
             </div>
         </figure>
         <figure class="image-panel">
-            <figcaption>AFTER <span class="hint">AI Preview</span><span class="mock-label">MOCK</span></figcaption>
+            <figcaption>AFTER <span class="hint">AI Preview</span><span class="mock-label" id="engine-label" hidden></span></figcaption>
             <div class="image-placeholder">
                 <span>예상 이미지</span>
             </div>

@@ -32,6 +32,22 @@ function describePlacement(placement) {
     return `가로 ${percent(placement.x)} · 세로 ${percent(placement.y)} 위치, ${percent(placement.width)} × ${percent(placement.height)}`;
 }
 
+// 결과를 만든 엔진에 맞는 안내를 보여준다.
+// AnyDoor 결과는 /api/previews/ 주소로 저장되고(AnyDoorPreviewGenerator), 그 밖은 Mock 예시 이미지다.
+// AI 결과를 Mock이라고 표시하거나, Mock을 AI 결과처럼 보이게 하지 않기 위함 (D4: Preview는 배치 참고용)
+function renderEngineNotice(imageUrl) {
+    if (!imageUrl) {
+        return;
+    }
+    const isAnyDoor = imageUrl.startsWith('/api/previews/');
+    const label = document.getElementById('engine-label');
+    label.textContent = isAnyDoor ? 'ANYDOOR' : 'MOCK';
+    label.hidden = false;
+    document.getElementById('engine-notice').textContent = isAnyDoor
+        ? 'AnyDoor로 생성한 예상 이미지입니다. 상품의 길이·그래픽·디테일은 실제와 다를 수 있으니, DP Plan의 실제 상품 이미지를 기준으로 확인하세요.'
+        : 'Mock 엔진: 입력과 관계없이 고정된 예시 이미지가 표시됩니다.';
+}
+
 async function init() {
     const task = await fetchTask(taskId);
 
@@ -45,6 +61,7 @@ async function init() {
     const [beforeSlot, afterSlot] = document.querySelectorAll('.image-grid .image-placeholder');
     showImage(beforeSlot, task.storePhotoUrl, '현재 매장 사진 (Before)');
     showImage(afterSlot, task.preview.imageUrl, 'AI Preview 결과 (After)');
+    renderEngineNotice(task.preview.imageUrl);
 
     // 생성 조건 요약: 어떤 상품과 영역으로 만든 결과인지 VMD가 확인할 수 있게 한다
     showImage(document.querySelector('.condition-thumb'), task.product.imageUrl, '적용 상품');
