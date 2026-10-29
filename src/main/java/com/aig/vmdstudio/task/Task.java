@@ -150,7 +150,12 @@ public class Task {
 
     // ----- AI Preview -----
 
-    /** Preview 결과 기록. 새로 만든 Preview는 아직 채택되지 않은 상태다 */
+    /**
+     * Preview 결과 기록. 새로 만든 Preview는 아직 채택되지 않은 상태다.
+     * 검토 완료 상태에서 다시 생성했다면 작업 중으로 되돌린다.
+     * (검토한 것은 이전 Preview이므로, 새 Preview를 채택한 뒤 다시 [작성 완료]를 거쳐야 공유 가능 — D14 원칙.
+     *  Mock은 항상 같은 이미지라 드러나지 않았고, AnyDoor 연결 후 같은 영역으로 재생성할 수 있게 되면서 생긴 경우)
+     */
     public void applyPreview(String imageUrl) {
         requireNotShared();
         if (!hasImages() || placement == null) {
@@ -158,6 +163,9 @@ public class Task {
         }
         this.previewImageUrl = imageUrl;
         this.previewAdopted = false;
+        if (this.status == TaskStatus.REVIEWED) {
+            this.status = TaskStatus.IN_PROGRESS;
+        }
         if (this.step == TaskStep.SETUP || this.step == TaskStep.EDITOR) {
             this.step = TaskStep.PREVIEW;
         }

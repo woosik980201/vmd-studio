@@ -66,6 +66,21 @@ public class ImageStorageService {
         return fileName;
     }
 
+    /**
+     * AI가 만든 결과 이미지(바이트)를 저장하고 파일 이름을 돌려준다.
+     * 업로드 이미지와 구분되도록 이름 앞에 preview- 를 붙인다.
+     * 만들 때마다 새 이름이므로 브라우저가 이전 결과를 캐시해서 보여주는 문제도 생기지 않는다.
+     */
+    public String storeGenerated(byte[] data, String extension) {
+        String fileName = "preview-" + UUID.randomUUID() + extension;
+        try {
+            Files.write(uploadDir.resolve(fileName), data);
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Preview 이미지를 저장하지 못했습니다.", e);
+        }
+        return fileName;
+    }
+
     /** 저장된 파일을 꺼낸다. 업로드 폴더 밖의 파일은 절대 돌려주지 않는다 */
     public Resource load(String fileName) {
         Path path = uploadDir.resolve(fileName).normalize();

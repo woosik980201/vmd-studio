@@ -1,6 +1,7 @@
 package com.aig.vmdstudio.preview;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 /**
@@ -11,8 +12,12 @@ import org.springframework.stereotype.Component;
  *
  * 예시 이미지는 application.properties의 vmd.preview.mock-image-url로 바꿀 수 있다.
  * (기본값은 자리 표시용 SVG. AnyDoor 사전 실험 #03A 결과 이미지를 static/mock/에 넣고 주소를 바꾸면 된다)
+ *
+ * vmd.preview.engine=mock 이거나 값이 없을 때 사용된다.
+ * AnyDoor 서버가 없는 환경(예: 개인 노트북)에서 화면 흐름을 확인할 때 다시 쓸 수 있도록 지우지 않고 남겨 둔다.
  */
 @Component
+@ConditionalOnProperty(name = "vmd.preview.engine", havingValue = "mock", matchIfMissing = true)
 public class MockPreviewGenerator implements PreviewGenerator {
 
     private final String mockImageUrl;

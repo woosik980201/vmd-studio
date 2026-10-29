@@ -617,3 +617,9 @@ h1 {
     color: #c0392b;
     font-weight: 700;
 }
+
+/* AI Preview 생성 중 안내 (약 2~3분) */
+.region-status.is-generating {
+    color: #111;
+    font-weight: 700;
+}

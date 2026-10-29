@@ -5,7 +5,8 @@ package com.aig.vmdstudio.preview;
  *
  * 서비스의 나머지 부분(TaskService, 화면)은 이 약속만 알고, 실제로 무엇이 이미지를 만드는지는 모른다.
  *  - 지금(Week 2): MockPreviewGenerator — 입력과 관계없이 고정 예시 이미지를 돌려준다
- *  - 4단계 이후: AnyDoor를 호출하는 구현체로 교체한다
+ *  - 10/29~: AnyDoorPreviewGenerator — Python AI 서버(AnyDoor)를 호출한다
+ *  어느 쪽을 쓸지는 application.properties의 vmd.preview.engine(mock / anydoor)으로 정한다.
  * 교체할 때 화면과 API는 바꾸지 않아도 된다. (Architecture v0.1 설계)
  */
 public interface PreviewGenerator {

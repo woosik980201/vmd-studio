@@ -34,6 +34,10 @@ let drag = null;
 // 잠깐 보여줄 안내 문구 (예: 영역이 너무 작음). 다음 동작을 시작하면 지운다
 let warning = '';
 
+// AI Preview를 만드는 중인지. AnyDoor는 약 2~3분 걸리므로(10/27 측정 166초)
+// 그동안 영역을 바꾸거나 버튼을 다시 누르지 못하게 막고, 경과 시간을 보여준다
+let generating = false;
+
 // ----- 계산 도우미 -----
 
 function clamp(value, min, max) {
@@ -100,7 +104,10 @@ function renderPlacement() {
         regionBox.hidden = true;
     }
 
-    if (warning) {
+    if (generating) {
+        regionStatus.textContent = 'AI Preview를 만드는 중입니다. 보통 2~3분 걸립니다. 이 화면을 닫지 말고 기다려 주세요.';
+        regionStatus.className = 'region-status is-generating';
+    } else if (warning) {
         regionStatus.textContent = warning;
         regionStatus.className = 'region-status is-warning';
     } else if (placement) {
@@ -114,14 +121,17 @@ function renderPlacement() {
     }
 
     // [Preview 생성] 활성 조건 (Wireframe v0.2): 영역 1개가 지정되어 있을 것. 끌고 있는 중에는 막는다
-    previewButton.disabled = placement === null || drag !== null;
+    // 생성 중에는 다시 누르지 못하게 한다 (AI 서버는 한 번에 한 건만 생성)
+    previewButton.disabled = placement === null || drag !== null || generating;
+    resetButton.disabled = generating;
+    photoCanvas.classList.toggle('is-disabled', !photoReady || generating);
 }
 
 // ----- 끌기 동작 (Pointer Events) -----
 
 photoCanvas.addEventListener('pointerdown', event => {
-    // 사진이 준비되지 않았거나, 마우스 오른쪽 버튼 등 주 버튼이 아니면 무시
-    if (!photoReady || event.button !== 0) {
+    // 사진이 준비되지 않았거나, Preview 생성 중이거나, 마우스 오른쪽 버튼 등 주 버튼이 아니면 무시
+    if (!photoReady || generating || event.button !== 0) {
         return;
     }
     warning = '';
@@ -204,10 +214,23 @@ resetButton.addEventListener('click', () => {
 
 // ----- Preview 생성 -----
 
+// 버튼에 경과 시간을 보여준다. 2분 넘게 아무 변화가 없으면 멈춘 것처럼 보이기 때문
+function startElapsedTimer() {
+    const startedAt = Date.now();
+    const update = () => {
+        const seconds = Math.floor((Date.now() - startedAt) / 1000);
+        const time = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+        previewButton.textContent = `Preview 생성 중... ${time}`;
+    };
+    update();
+    return setInterval(update, 1000);
+}
+
 // [Preview 생성]: ① 영역 저장 → ② Preview 생성 요청 → ③ Preview 화면으로 이동
 previewButton.addEventListener('click', async () => {
-    previewButton.disabled = true;
-    previewButton.textContent = 'Preview 생성 중...';
+    generating = true;
+    renderPlacement();
+    const timer = startElapsedTimer();
 
     try {
         await apiRequest(`/api/tasks/${taskId}/placement`, {
@@ -218,9 +241,12 @@ previewButton.addEventListener('click', async () => {
         await apiRequest(`/api/tasks/${taskId}/preview`, { method: 'POST' });
         window.location.href = `/preview.html?taskId=${taskId}`;
     } catch (error) {
-        showError(error);
+        // 실패하면 다시 시도할 수 있게 원래대로 돌려놓는다 (영역은 그대로 남아 있음)
+        clearInterval(timer);
+        generating = false;
         previewButton.textContent = 'Preview 생성 →';
         renderPlacement();
+        showError(error);
     }
 });
 
@@ -229,8 +255,7 @@ previewButton.addEventListener('click', async () => {
 // 사진이 준비되면 그리기를 허용한다
 function setPhotoReady(ready) {
     photoReady = ready;
-    photoCanvas.classList.toggle('is-disabled', !ready);
-    renderPlacement();
+    renderPlacement(); // 캔버스 비활성 표시(is-disabled)도 여기서 함께 정한다
 }
 
 // 매장 사진을 보여주고, 캔버스 비율을 사진 비율과 같게 맞춘다
