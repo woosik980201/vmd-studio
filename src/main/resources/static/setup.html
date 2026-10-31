@@ -14,6 +14,17 @@
         <h1>매장 사진과 상품 등록</h1>
     </div>
 
+    <!-- 적용 범위와 입력 가이드 (D24, 10/29~31 품질 실험 결과) -->
+    <section class="notice guide">
+        <strong>AI Preview는 정면 진열 자리(페이스아웃 · 마네킹)에 맞춰져 있습니다.</strong>
+        옆으로 겹쳐 걸린 행거 진열은 결과가 부정확할 수 있습니다.
+        <ol>
+            <li>상품 사진은 <strong>정면 사진</strong>을 사용해 주세요 (흰 배경 권장).</li>
+            <li>다음 단계에서 영역은 <strong>바꿀 상품 하나만, 상품 모양에 가깝게</strong> 지정해 주세요.</li>
+            <li>마네킹은 <strong>머리부터 받침대까지 전체</strong>가 나오게 찍어 주세요.</li>
+        </ol>
+    </section>
+
     <!-- 매장 정보 -->
     <section class="card form-row">
         <div class="field">
@@ -33,7 +44,7 @@
             <label class="image-drop" id="store-photo-preview" for="store-photo">
           <span>
             클릭해서 현재 VM/DP 사진 선택<br>
-            <span class="hint">jpg · png, 10MB 이하</span>
+            <span class="hint">jpg · png, 10MB 이하 · 정면에서 찍은 사진</span>
           </span>
             </label>
             <input type="file" id="store-photo" accept=".jpg,.jpeg,.png" hidden>
@@ -46,6 +57,7 @@
                     <label class="image-drop" id="product-image-preview" for="product-image">
                         <span>실제 상품<br>이미지 선택 <span class="required">*</span></span>
                     </label>
+                    <span class="hint">정면 · 흰 배경 사진</span>
                     <input type="file" id="product-image" accept=".jpg,.jpeg,.png" hidden>
                 </div>
                 <div>

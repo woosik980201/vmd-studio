@@ -254,6 +254,29 @@ h1 {
     line-height: 1.6;
 }
 
+/* 입력 가이드 (D24): 안내 안의 번호·점 목록 */
+.notice.guide {
+    margin-bottom: 16px;
+}
+
+.notice ol,
+.notice .guide-list {
+    margin: 6px 0 0;
+    padding-left: 20px;
+}
+
+/* 영역 비율 안내: 막지는 않고 알려만 준다 */
+.ratio-hint {
+    margin-top: 8px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #555;
+}
+
+.ratio-hint.is-mismatch {
+    color: #b35c00;
+}
+
 .editor-layout {
     display: grid;
     grid-template-columns: 1fr 280px;
@@ -618,7 +641,7 @@ h1 {
     font-weight: 700;
 }
 
-/* AI Preview 생성 중 안내 (약 2~3분) */
+/* AI Preview 생성 중 안내 (보통 1~4분) */
 .region-status.is-generating {
     color: #111;
     font-weight: 700;

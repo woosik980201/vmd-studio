@@ -29,7 +29,8 @@ function describePlacement(placement) {
         return '미지정';
     }
     const percent = value => `${Math.round(value * 100)}%`;
-    return `가로 ${percent(placement.x)} · 세로 ${percent(placement.y)} 위치, ${percent(placement.width)} × ${percent(placement.height)}`;
+    // 위치(사진 왼쪽·위에서 떨어진 정도)와 크기(가로 × 세로)를 나눠 보여준다 (10/31 실제 화면 확인 중 헷갈림 발견)
+    return `위치: 왼쪽 ${percent(placement.x)} · 위 ${percent(placement.y)} / 크기: ${percent(placement.width)} × ${percent(placement.height)}`;
 }
 
 // 결과를 만든 엔진에 맞는 안내를 보여준다.
