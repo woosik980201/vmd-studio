@@ -47,7 +47,7 @@ let photoSize = null;
 // 상품 사진에서 흰 배경을 뺀 상품 부분의 세로/가로 비율. 계산 전이거나 실패하면 null
 let productRatio = null;
 
-// AI Preview를 만드는 중인지. AnyDoor는 보통 1~4분 걸리므로(10/31 측정 25~303초)
+// AI Preview를 만드는 중인지. AnyDoor는 fp16 적용 후 보통 10초 안팎(10/31 측정 9~10초, fp32 때는 25~303초)
 // 그동안 영역을 바꾸거나 버튼을 다시 누르지 못하게 막고, 경과 시간을 보여준다
 let generating = false;
 
@@ -118,7 +118,7 @@ function renderPlacement() {
     }
 
     if (generating) {
-        regionStatus.textContent = 'AI Preview를 만드는 중입니다. 보통 1~4분 걸립니다. 이 화면을 닫지 말고 기다려 주세요.';
+        regionStatus.textContent = 'AI Preview를 만드는 중입니다. 보통 30초 이내에 끝납니다. 이 화면을 닫지 말고 기다려 주세요.';
         regionStatus.className = 'region-status is-generating';
     } else if (warning) {
         regionStatus.textContent = warning;
