@@ -52,7 +52,7 @@ public class AnyDoorPreviewGenerator implements PreviewGenerator {
         this.imageStorage = imageStorage;
         this.serverUrl = serverUrl;
 
-        // 연결은 짧게(꺼져 있으면 바로 안내), 응답 대기는 길게(생성에 약 2~3분 걸림, 10/27 측정 166초)
+        // 연결은 짧게(꺼져 있으면 바로 안내), 응답 대기는 넉넉하게(fp16 적용 후 약 10초지만, VMD_FP16=0으로 되돌리면 2~5분 걸리므로 5분 유지)
         SimpleClientHttpRequestFactory requestFactory = new SimpleClientHttpRequestFactory();
         requestFactory.setConnectTimeout(connectTimeout);
         requestFactory.setReadTimeout(readTimeout);

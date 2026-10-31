@@ -59,10 +59,16 @@ cv2.setNumThreads(0)
 cv2.ocl.setUseOpenCL(False)
 
 # ---------------------------------------------------------------------------
-# 1. 모델 로딩 (run_gradio_demo.py와 동일한 설정)
-#    save_memory=True: 10/27 측정에서 생성 시간 4분 11초 -> 2분 10초
+# 1. 모델 로딩 (run_gradio_demo.py 설정 + fp16)
+#    10/27: save_memory=True로 4분 11초 -> 2분 10초 / 10/31: fp16으로 save_memory 없이 약 10초
 # ---------------------------------------------------------------------------
-save_memory = True
+# fp16 (10/31): 가중치를 반정밀도(16bit)로 바꿔 약 9.8GB → 4.9GB.
+#   그러면 10GB GPU에 모델 전체가 올라가므로, 생성할 때마다 모델 일부를 CPU↔GPU로 옮기는 save_memory가 필요 없어진다.
+#   VMD_FP16=0 으로 실행하면 기존 방식(fp32 + save_memory)과 같다.
+#   10/31 측정: A3 195.6초 → 10.2초, A4 297.4초 → 9.1초, 결과는 눈으로 구분 안 됨(픽셀 평균 차 0.02~0.03)
+USE_FP16 = os.environ.get("VMD_FP16", "1") == "1"
+PORT = int(os.environ.get("VMD_AI_PORT", "8000"))
+save_memory = not USE_FP16
 disable_verbosity()
 if save_memory:
     enable_sliced_attention()
@@ -70,8 +76,12 @@ if save_memory:
 config = OmegaConf.load("./configs/demo.yaml")
 model = create_model(config.config_file).cpu()
 model.load_state_dict(load_state_dict(config.pretrained_model, location="cuda"))
+if USE_FP16:
+    model = model.half()
 model = model.cuda()
 ddim_sampler = DDIMSampler(model)
+print(f"[VMD AI] precision={'fp16' if USE_FP16 else 'fp32'} | save_memory={save_memory} | "
+      f"GPU 사용 {torch.cuda.memory_allocated() / 1024**3:.2f}GB")
 
 from iseg.coarse_mask_refine_util import BaselineModel
 
@@ -191,6 +201,8 @@ def inference_single_image(ref_image, ref_mask, tar_image, tar_mask,
 
     H, W = 512, 512
 
+    autocast = torch.autocast("cuda", dtype=torch.float16, enabled=USE_FP16)
+    autocast.__enter__()
     cond = {"c_concat": [control], "c_crossattn": [model.get_learned_conditioning(clip_input)]}
     un_cond = {"c_concat": [control],
                "c_crossattn": [model.get_learned_conditioning([torch.zeros((1, 3, 224, 224))] * num_samples)]}
@@ -209,7 +221,8 @@ def inference_single_image(ref_image, ref_mask, tar_image, tar_mask,
         model.low_vram_shift(is_diffusing=False)
 
     x_samples = model.decode_first_stage(samples)
-    x_samples = (einops.rearrange(x_samples, "b c h w -> b h w c") * 127.5 + 127.5).cpu().numpy()
+    autocast.__exit__(None, None, None)
+    x_samples = (einops.rearrange(x_samples.float(), "b c h w -> b h w c") * 127.5 + 127.5).cpu().numpy()
 
     pred = x_samples[0]
     pred = np.clip(pred, 0, 255)[1:, :, :]
@@ -313,6 +326,7 @@ def health():
         "status": "ok",
         "gpu": torch.cuda.get_device_name(0),
         "save_memory": save_memory,
+        "precision": "fp16" if USE_FP16 else "fp32",
         "busy": GPU_LOCK.locked(),
     }
 
@@ -359,7 +373,7 @@ def generate(
 
         elapsed = time.time() - started
         peak_gb = torch.cuda.max_memory_allocated() / 1024**3
-        print(f"[VMD AI] 생성 완료 {elapsed:.1f}s | seed={used_seed} | ref_mask={ref_mask_method} | peak={peak_gb:.2f}GB")
+        print(f"[VMD AI] 생성 완료 {elapsed:.1f}s | {'fp16' if USE_FP16 else 'fp32'} | seed={used_seed} | ref_mask={ref_mask_method} | peak={peak_gb:.2f}GB")
 
         buffer = io.BytesIO()
         Image.fromarray(np.clip(result, 0, 255).astype(np.uint8)).save(buffer, format="PNG")
@@ -370,6 +384,7 @@ def generate(
                 "X-Generation-Seconds": f"{elapsed:.1f}",
                 "X-Seed": str(used_seed),
                 "X-Ref-Mask": ref_mask_method,
+                "X-Precision": "fp16" if USE_FP16 else "fp32",
             },
         )
     except HTTPException:
@@ -383,5 +398,5 @@ def generate(
 
 if __name__ == "__main__":
     print(f"[VMD AI] AnyDoor 폴더: {ANYDOOR_DIR}")
-    print("[VMD AI] 테스트 화면: http://127.0.0.1:8000/docs")
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    print(f"[VMD AI] 테스트 화면: http://127.0.0.1:{PORT}/docs")
+    uvicorn.run(app, host="127.0.0.1", port=PORT)

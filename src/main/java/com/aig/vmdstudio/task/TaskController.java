@@ -77,7 +77,7 @@ public class TaskController {
         return TaskResponse.from(taskService.updatePlacement(id, request.toPlacement()));
     }
 
-    /** AI Preview 생성 (vmd.preview.engine에 따라 Mock 또는 AnyDoor. AnyDoor는 약 2~3분 걸림) */
+    /** AI Preview 생성 (vmd.preview.engine에 따라 Mock 또는 AnyDoor. AnyDoor는 fp16 적용 후 약 10초, 10/31) */
     @PostMapping("/{id}/preview")
     public TaskResponse generatePreview(@PathVariable Long id) {
         return TaskResponse.from(taskService.generatePreview(id));
