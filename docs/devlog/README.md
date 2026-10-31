@@ -11,5 +11,6 @@
 | 10/16 | [2차 교수 미팅](2026-10-16_2nd-meeting.md) | Python 전환은 필요할 때로 (D19) |
 | 10/27 | [AnyDoor 실행 · 속도 진단 · AI 서버](2026-10-27_anydoor-ai-server.md) | 4분 → 2분대, Seed 미적용 발견, PR #7 |
 | 10/29 | [Spring ↔ AnyDoor 연결](2026-10-29_spring-anydoor-connection.md) | 버튼 하나로 실제 AnyDoor Preview (152.7초), Mock 단계 가정 2개 발견·수정, PR #9 |
+| 10/29 ~ 10/31 | [품질 실험 A1~A4 · 마네킹 검증 · 적용 범위 확정](2026-10-31_quality-experiments.md) | 원피스 원인 = 영역·상품 사진의 비율·방향 불일치 → 범위를 페이스아웃 + 마네킹으로 확정 (D24), 마네킹 실패 원인은 구도, 생성 시간 편차는 메모리 원인 아님 |
 
 주요 결정 전체는 [decisions.md](../decisions.md)에 있습니다.
