@@ -17,6 +17,7 @@ const regionBox = document.getElementById('region-box');
 const regionStatus = document.getElementById('region-status');
 const resetButton = document.getElementById('reset-button');
 const previewButton = document.getElementById('preview-button');
+const ratioHint = document.getElementById('ratio-hint');
 
 // 너무 작은 영역은 Preview 결과를 판단하기 어려우므로 막는다 (사진 가로·세로의 5% 미만)
 const MIN_SIZE = 0.05;
@@ -34,7 +35,19 @@ let drag = null;
 // 잠깐 보여줄 안내 문구 (예: 영역이 너무 작음). 다음 동작을 시작하면 지운다
 let warning = '';
 
-// AI Preview를 만드는 중인지. AnyDoor는 약 2~3분 걸리므로(10/27 측정 166초)
+// 영역 비율 안내 (10/29 품질 실험 A1)
+//   AnyDoor는 상품을 영역 사각형에 맞춰 그린다. 영역 세로/가로를 3.6 → 2.0 → 1.2로 바꾸자
+//   결과 티의 세로/가로도 3.6 → 1.9 → 1.3으로 따라왔다. 그래서 영역이 상품보다 많이 길거나 넓으면 미리 알려 준다.
+//   막지는 않는다 (최종 판단은 VMD, D2). 기준 1.5배: 실험에서 2.0(상품 1.2의 약 1.65배)부터 눈에 띄게 길어졌다
+const RATIO_TOLERANCE = 1.5;
+
+// 사진 원본 크기(px). 0~1 비율 영역을 실제 세로/가로 비율로 바꿀 때 쓴다
+let photoSize = null;
+
+// 상품 사진에서 흰 배경을 뺀 상품 부분의 세로/가로 비율. 계산 전이거나 실패하면 null
+let productRatio = null;
+
+// AI Preview를 만드는 중인지. AnyDoor는 보통 1~4분 걸리므로(10/31 측정 25~303초)
 // 그동안 영역을 바꾸거나 버튼을 다시 누르지 못하게 막고, 경과 시간을 보여준다
 let generating = false;
 
@@ -105,7 +118,7 @@ function renderPlacement() {
     }
 
     if (generating) {
-        regionStatus.textContent = 'AI Preview를 만드는 중입니다. 보통 2~3분 걸립니다. 이 화면을 닫지 말고 기다려 주세요.';
+        regionStatus.textContent = 'AI Preview를 만드는 중입니다. 보통 1~4분 걸립니다. 이 화면을 닫지 말고 기다려 주세요.';
         regionStatus.className = 'region-status is-generating';
     } else if (warning) {
         regionStatus.textContent = warning;
@@ -120,11 +133,80 @@ function renderPlacement() {
         regionStatus.className = 'region-status';
     }
 
+    renderRatioHint();
+
     // [Preview 생성] 활성 조건 (Wireframe v0.2): 영역 1개가 지정되어 있을 것. 끌고 있는 중에는 막는다
     // 생성 중에는 다시 누르지 못하게 한다 (AI 서버는 한 번에 한 건만 생성)
     previewButton.disabled = placement === null || drag !== null || generating;
     resetButton.disabled = generating;
     photoCanvas.classList.toggle('is-disabled', !photoReady || generating);
+}
+
+// 영역 비율과 상품 비율을 비교해 안내한다 (경고만, 버튼은 막지 않음)
+function renderRatioHint() {
+    if (!placement || !photoSize || !productRatio || placement.width === 0) {
+        ratioHint.hidden = true;
+        return;
+    }
+    const regionRatio = (placement.height * photoSize.height) / (placement.width * photoSize.width);
+    const diff = regionRatio / productRatio;
+    const text = `영역 세로/가로 ${regionRatio.toFixed(1)} · 상품 ${productRatio.toFixed(1)}`;
+
+    if (diff > RATIO_TOLERANCE) {
+        ratioHint.textContent = `${text} — 영역이 상품보다 세로로 깁니다. 옷이 길게 늘어날 수 있어요. 상품 모양에 가깝게 줄여 보세요.`;
+        ratioHint.className = 'ratio-hint is-mismatch';
+    } else if (diff < 1 / RATIO_TOLERANCE) {
+        ratioHint.textContent = `${text} — 영역이 상품보다 가로로 넓습니다. 옷이 옆으로 퍼질 수 있어요. 상품 모양에 가깝게 줄여 보세요.`;
+        ratioHint.className = 'ratio-hint is-mismatch';
+    } else {
+        ratioHint.textContent = `${text} — 상품 모양과 비슷합니다.`;
+        ratioHint.className = 'ratio-hint';
+    }
+    ratioHint.hidden = false;
+}
+
+// 상품 사진에서 흰 배경이 아닌 부분(상품)을 찾아 세로/가로 비율을 구한다
+// AI 서버의 흰 배경 자동 제외(밝기 240 미만)와 같은 기준. 작게 줄여서 계산해 빠르게 끝낸다
+function measureProductRatio(url) {
+    const img = new Image();
+    img.addEventListener('load', () => {
+        try {
+            const scale = Math.min(1, 200 / Math.max(img.naturalWidth, img.naturalHeight));
+            const width = Math.max(1, Math.round(img.naturalWidth * scale));
+            const height = Math.max(1, Math.round(img.naturalHeight * scale));
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext('2d');
+            context.drawImage(img, 0, 0, width, height);
+            const data = context.getImageData(0, 0, width, height).data;
+
+            let left = width, right = -1, top = height, bottom = -1;
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const i = (y * width + x) * 4;
+                    if (data[i] < 240 || data[i + 1] < 240 || data[i + 2] < 240) {
+                        if (x < left) left = x;
+                        if (x > right) right = x;
+                        if (y < top) top = y;
+                        if (y > bottom) bottom = y;
+                    }
+                }
+            }
+            // 상품을 못 찾거나(전부 흰색) 거의 전체가 상품이면(배경 없음) 사진 전체 비율을 쓴다
+            const found = right > left && bottom > top;
+            const coversAll = found && (right - left + 1) * (bottom - top + 1) > width * height * 0.98;
+            productRatio = found && !coversAll
+                ? (bottom - top + 1) / (right - left + 1)
+                : img.naturalHeight / img.naturalWidth;
+        } catch (error) {
+            // 비율을 못 구해도 영역 지정에는 지장이 없으므로 안내만 생략한다
+            console.warn('상품 비율 계산 실패', error);
+            productRatio = null;
+        }
+        renderRatioHint();
+    });
+    img.src = url;
 }
 
 // ----- 끌기 동작 (Pointer Events) -----
@@ -273,6 +355,7 @@ function showStorePhoto(url) {
     const img = placeholder.querySelector('img');
     img.addEventListener('load', () => {
         photoCanvas.style.aspectRatio = `${img.naturalWidth} / ${img.naturalHeight}`;
+        photoSize = { width: img.naturalWidth, height: img.naturalHeight };
         setPhotoReady(true);
     });
     img.addEventListener('error', () => {
@@ -300,6 +383,9 @@ async function init() {
     // 서버에 저장된 이미지 표시 (예시 작업처럼 이미지가 없으면 안내 문구)
     showStorePhoto(task.storePhotoUrl);
     showImage(document.querySelector('.product-card-image'), task.product.imageUrl, '실제 상품 이미지');
+    if (task.product.imageUrl) {
+        measureProductRatio(task.product.imageUrl);
+    }
 
     // 이전 단계로 돌아갈 때도 같은 작업 번호를 유지한다
     document.getElementById('prev-link').href = `/setup.html?taskId=${taskId}`;
