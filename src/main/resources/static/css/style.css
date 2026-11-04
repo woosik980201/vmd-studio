@@ -275,7 +275,7 @@ h1 {
 
 .form-row {
     display: flex;
-    gap: 20px;
+    gap: 28px;
 }
 
 .form-row .field {
@@ -923,6 +923,12 @@ h1 {
     border-top: 1px solid var(--ink);
     border-radius: 0;
     background: transparent;
+}
+
+/* 등록 화면: 입력칸 밑줄 바로 아래에 구분선이 겹치지 않게 한다 */
+.two-column .card {
+    padding-top: 0;
+    border-top: 0;
 }
 
 .section-title {
