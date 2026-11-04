@@ -1,3 +1,5 @@
+@import url("/fonts/display.css");
+
 /* VMD Studio 공통 스타일
    기준: 매장 사진이 주인공이다. 넓은 여백과 큰 제목으로 화면을 조용히 두고,
    사람이 조작하는 곳(버튼, 영역 상자, 현재 단계)에만 코발트색을 쓴다.
@@ -12,7 +14,7 @@
 }
 
 :root {
-    --wall: #f4f5f5;      /* 화면 바탕: 매장 벽 */
+    --wall: #f7f7f6;      /* 화면 바탕: 매장 벽 */
     --paper: #ffffff;     /* 내용 면 */
     --ink: #171c26;       /* 글자·기본 행동 */
     --muted: #5e6672;     /* 보조 글자 */
@@ -37,8 +39,7 @@ body {
     font-size: 15px;
     line-height: 1.5;
     color: var(--ink);
-    /* 벽 위쪽에서 내려오는 매장 조명 */
-    background: radial-gradient(ellipse 900px 460px at 50% 60px, #ffffff, transparent) no-repeat, var(--wall);
+    background: var(--wall);
     -webkit-font-smoothing: antialiased;
 }
 
@@ -51,8 +52,7 @@ body {
    아래 굵은 선을 행거 봉처럼 두고, 현재 단계가 그 선 위에 걸린다 */
 .app-header {
     background: var(--paper);
-    position: relative;
-    border-bottom: 3px solid var(--ink);
+    border-bottom: 1px solid var(--line);
     padding: 18px 40px 0;
 }
 
@@ -101,36 +101,17 @@ body {
     padding-bottom: 10px;
 }
 
-/* 현재 단계: 행거 봉에 걸린 행택. 위쪽 모서리를 잘라 태그 모양을 만들고 구멍을 뚫는다 */
 .step.is-current {
-    position: relative;
-    z-index: 1;
-    top: 24px;
-    margin-top: -6px;
-    padding: 22px 16px 12px;
-    background: var(--action);
-    color: #fff;
+    color: var(--ink);
     font-weight: 700;
-    clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%, 0 14px);
-}
-
-.step.is-current::before {
-    content: "";
-    position: absolute;
-    top: 6px;
-    left: 50%;
-    width: 8px;
-    height: 8px;
-    margin-left: -4px;
-    border-radius: 50%;
-    background: var(--ink);
+    box-shadow: inset 0 -2px 0 var(--ink);
 }
 
 /* ---------- 페이지 공통 ---------- */
 .page {
     max-width: 1180px;
     margin: 0 auto;
-    padding: 80px 40px 96px;
+    padding: 56px 40px 80px;
 }
 
 .page-title-row {
@@ -143,10 +124,10 @@ body {
 
 h1 {
     margin: 0;
-    font-size: clamp(40px, 5vw, 64px);
-    font-weight: 800;
-    line-height: 1.1;
-    letter-spacing: -0.04em;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.015em;
 }
 
 .note {
@@ -158,9 +139,9 @@ h1 {
 /* ---------- 버튼 ---------- */
 .btn {
     display: inline-block;
-    padding: 12px 22px;
+    padding: 10px 18px;
     border: 1px solid var(--ink);
-    border-radius: 999px;
+    border-radius: 4px;
     background: transparent;
     color: var(--ink);
     font-family: inherit;
@@ -177,14 +158,14 @@ h1 {
 }
 
 .btn-primary {
-    border-color: var(--action);
-    background: var(--action);
+    border-color: var(--ink);
+    background: var(--ink);
     color: #fff;
 }
 
 .btn-primary:hover:not(:disabled) {
-    border-color: #1a31ad;
-    background: #1a31ad;
+    border-color: #2c3442;
+    background: #2c3442;
 }
 
 .btn:disabled {
@@ -195,38 +176,23 @@ h1 {
 }
 
 /* ---------- 상태 배지 ---------- */
-/* 상태 배지도 작은 행택 모양 */
 .badge {
-    position: relative;
     display: inline-block;
-    padding: 4px 12px 4px 22px;
-    font-size: 12px;
+    padding: 0;
+    font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
-    clip-path: polygon(9px 0, 100% 0, 100% 100%, 9px 100%, 0 50%);
 }
 
-.badge::before {
-    content: "";
-    position: absolute;
-    top: 50%;
-    left: 10px;
-    width: 5px;
-    height: 5px;
-    margin-top: -2.5px;
-    border-radius: 50%;
-    background: #fff;
-}
-
-.badge-IN_PROGRESS { background: var(--mat); color: var(--ink); }
-.badge-REVIEWED    { background: var(--action-tint); color: #1a31ad; }
-.badge-SHARED      { background: var(--done-tint); color: var(--done); }
+.badge-IN_PROGRESS { color: var(--muted); }
+.badge-REVIEWED    { color: var(--ink); }
+.badge-SHARED      { color: var(--done); }
 
 /* ---------- 표 ---------- */
 .task-table {
     width: 100%;
     border-collapse: collapse;
-    border-radius: 18px;
+    border-radius: 2px;
     background: var(--paper);
     overflow: hidden;
 }
@@ -290,7 +256,7 @@ h1 {
 }
 
 .card {
-    border-radius: 18px;
+    border-radius: 2px;
     background: var(--paper);
     padding: 32px;
 }
@@ -418,7 +384,7 @@ h1 {
 /* ---------- 안내 ---------- */
 .notice {
     max-width: 78ch;
-    font-size: 17px;
+    font-size: 15px;
     line-height: 1.6;
     color: var(--muted);
 }
@@ -469,7 +435,7 @@ h1 {
     max-width: 520px;
     aspect-ratio: 4 / 3;
     margin: 0 auto;
-    border-radius: 12px;
+    border-radius: 2px;
     background: var(--mat);
     overflow: hidden;
     cursor: crosshair;
@@ -573,7 +539,7 @@ h1 {
     align-items: center;
     justify-content: center;
     aspect-ratio: 1 / 1;
-    border-radius: 18px;
+    border-radius: 2px;
     background: var(--mat);
     color: var(--muted);
     font-size: 14px;
@@ -642,7 +608,7 @@ h1 {
 /* ---------- DP Plan ---------- */
 .state-banner {
     padding: 14px 20px;
-    border-radius: 12px;
+    border-radius: 2px;
     font-size: 15px;
     font-weight: 600;
 }
@@ -690,7 +656,7 @@ h1 {
     align-items: center;
     gap: 12px;
     padding: 14px 20px;
-    border-radius: 12px;
+    border-radius: 2px;
     background: var(--paper);
     color: var(--muted);
     font-size: 14px;
@@ -826,8 +792,8 @@ h1 {
 /* ---------- 좁은 화면 ---------- */
 @media (max-width: 760px) {
     .app-header { padding: 14px 16px 0; }
-    .page { padding: 56px 16px 48px; }
-    h1 { font-size: 30px; }
+    .page { padding: 32px 16px 48px; }
+    h1 { font-size: 26px; }
     .card { padding: 20px; }
     .notice { font-size: 15px; }
     .two-column,
@@ -843,4 +809,184 @@ h1 {
 
 @media (prefers-reduced-motion: reduce) {
     * { transition: none !important; animation: none !important; }
+}
+
+/* ---------- 에디토리얼: 패션 룩북처럼 큰 세리프 제목, 흑백 표지, 면 대신 선으로 나눈 화면 ---------- */
+:root {
+    --wall: #fefbf3;
+    --paper: #fefbf3;
+    --ink: #080808;
+    --muted: #625f58;
+    --line: #d9d4c7;
+    --mat: #efeadf;
+    --caution-tint: #f6ecd2;
+    --done-tint: #e4eedf;
+    --serif: "Instrument Serif", "Pretendard", serif;
+    --narrow: "Sofia Sans Extra Condensed", "Pretendard", sans-serif;
+}
+
+.app-header {
+    padding: 14px 40px 0;
+    background: transparent;
+}
+
+.brand {
+    font-family: var(--serif);
+    font-size: 30px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+.step.is-current {
+    box-shadow: inset 0 -1px 0 var(--ink);
+}
+
+h1 {
+    font-family: var(--serif);
+    font-size: clamp(44px, 6.4vw, 92px);
+    font-weight: 400;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+}
+
+.page-title-row {
+    align-items: flex-end;
+    margin-bottom: 36px;
+}
+
+/* 대시보드 표지: 어두운 흑백 화보 위에 큰 세리프 글자를 얹는다 (AI 생성 이미지) */
+.hero {
+    position: relative;
+    height: clamp(380px, 62vh, 620px);
+    background: var(--ink);
+    overflow: hidden;
+}
+
+.hero img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: 100% 42%;
+}
+
+.hero p {
+    position: absolute;
+    left: 40px;
+    bottom: 28px;
+    margin: 0;
+    color: #fff;
+    font-family: var(--serif);
+    font-size: clamp(64px, 13vw, 236px);
+    line-height: 1;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+}
+
+.btn {
+    border-radius: 0;
+}
+
+.btn:hover:not(:disabled) {
+    background: var(--ink);
+    color: var(--paper);
+}
+
+.btn-primary:hover:not(:disabled) {
+    border-color: var(--ink);
+    background: transparent;
+    color: var(--ink);
+}
+
+.btn:disabled {
+    background: transparent;
+}
+
+.task-table {
+    border-top: 1px solid var(--ink);
+    border-radius: 0;
+    background: transparent;
+}
+
+.task-table th,
+.task-table td {
+    padding: 18px 4px;
+    border-bottom: 1px solid var(--line);
+}
+
+.task-table tr.clickable:hover {
+    background: var(--mat);
+}
+
+.card {
+    padding: 22px 0 0;
+    border-top: 1px solid var(--ink);
+    border-radius: 0;
+    background: transparent;
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* 큰 제목은 영어, 한글은 그 아래 작은 설명으로 둔다 */
+.title-ko {
+    display: block;
+    margin-top: 8px;
+    font-family: "Pretendard", sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: var(--muted);
+}
+
+.field input[type="text"],
+.field textarea,
+.instruction-input {
+    border-radius: 0;
+    border-color: var(--ink);
+    background: transparent;
+}
+
+.field input[type="text"] {
+    padding: 8px 0;
+    border-width: 0 0 1px;
+}
+
+.image-panel figcaption {
+    font-family: var(--serif);
+    font-size: 34px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
+}
+
+.image-panel figcaption .hint {
+    font-family: "Pretendard", sans-serif;
+}
+
+.image-placeholder,
+.image-drop,
+.photo-canvas,
+.state-banner,
+.prototype-bar,
+.owner-bar {
+    border-radius: 0;
+}
+
+.mock-label {
+    border-radius: 0;
+    font-family: var(--narrow);
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+}
+
+@media (max-width: 760px) {
+    .app-header { padding: 12px 16px 0; }
+    .hero { height: 320px; }
+    .hero img { object-position: 82% 42%; }
+    .hero p { left: 16px; bottom: 16px; font-size: 19vw; }
+    .brand { font-size: 26px; }
 }

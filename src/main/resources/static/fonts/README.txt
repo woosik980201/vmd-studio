@@ -1,2 +1,2 @@
-Pretendard 1.3.9 (https://github.com/orioncactus/pretendard)
+Pretendard, Instrument Serif, Sofia Sans Extra Condensed
 SIL Open Font License 1.1
