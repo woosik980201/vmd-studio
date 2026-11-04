@@ -31,7 +31,7 @@ Dashboard → Store Setup → DP Editor → AI Preview → [채택] → DP Plan 
 
 | 화면 | 역할 |
 | --- | --- |
-| Dashboard | 매장별 작업과 상태(작업 중 / 검토 완료 / 공유 완료) |
+| Dashboard | 매장별 작업과 상태(작업 중 / 작성 완료 / 공유 완료) |
 | Store Setup | 매장 사진, 상품 이미지, 상품명·품번(필수), VMD 메모(내부용) |
 | DP Editor | 사진 위에 바꿀 영역을 드래그로 지정 (이동·크기 조절, 0~1 비율로 저장) |
 | AI Preview | Before / After 비교, 생성 조건 표시, **명시적 채택** |

@@ -5,6 +5,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,6 +49,13 @@ public class TaskController {
     @GetMapping("/{id}")
     public TaskResponse get(@PathVariable Long id) {
         return TaskResponse.from(taskService.findById(id));
+    }
+
+    /** Dashboard: 작업 삭제 (사진·Preview 파일 포함, 되돌릴 수 없음) */
+    @DeleteMapping("/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete(@PathVariable Long id) {
+        taskService.delete(id);
     }
 
     /**

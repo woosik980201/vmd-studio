@@ -3,7 +3,7 @@
 // Backend의 TaskStatus enum과 같은 값을 사용한다
 const STATUS_LABELS = {
     IN_PROGRESS: '작업 중',
-    REVIEWED: '검토 완료',
+    REVIEWED: '작성 완료',
     SHARED: '공유 완료'
 };
 

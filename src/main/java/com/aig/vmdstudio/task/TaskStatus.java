@@ -6,6 +6,6 @@ package com.aig.vmdstudio.task;
  */
 public enum TaskStatus {
     IN_PROGRESS, // 작업 중
-    REVIEWED,    // 검토 완료 (공유 전, 매장 직원에게 보이지 않음)
+    REVIEWED,    // 작성 완료 (화면 표시 이름, D26. 공유 전, 매장 직원에게 보이지 않음)
     SHARED       // 공유 완료 (매장 직원 확인 가능, 수정 불가)
 }

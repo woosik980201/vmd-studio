@@ -140,6 +140,22 @@ h1 {
     color: #555;
 }
 
+.task-table .task-action {
+    width: 60px;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.task-table .task-delete {
+    color: #a33;
+}
+
+.task-table .task-empty {
+    padding: 40px 16px;
+    text-align: center;
+    color: #888;
+}
+
 .task-table tr.clickable {
     cursor: pointer;
 }

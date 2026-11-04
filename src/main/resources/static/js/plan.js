@@ -85,7 +85,7 @@ function render() {
     } else if (!isAdopted) {
         stateBanner.textContent = '채택한 Preview가 없습니다 · 영역이나 이미지가 바뀌었다면 Preview 화면에서 다시 채택해 주세요';
     } else if (state.status === 'REVIEWED') {
-        stateBanner.textContent = '검토 완료 · 공유 전 (매장 직원에게 아직 보이지 않음)';
+        stateBanner.textContent = '작성 완료 · 공유 전 (매장 직원에게 아직 보이지 않음)';
     } else {
         stateBanner.textContent = '작성 중 · 매장 직원에게 아직 보이지 않음';
     }
@@ -287,7 +287,17 @@ document.getElementById('back-to-edit-button').addEventListener('click', () => {
 
 // ----- 서버에서 작업을 받아 화면을 채운다 -----
 async function init() {
-    task = await fetchTask(taskId);
+    const loadedTask = await fetchTask(taskId);
+
+    // 직원용 주소는 공유 완료 작업만 보여준다. 공유 전 내용을 '확정'으로 보이게 하지 않는다 (D26)
+    if (openedAsViewMode && loadedTask.status !== 'SHARED') {
+        renderHeader({ brandLink: false });
+        document.querySelector('main').innerHTML =
+            '<section class="state-banner is-editing">아직 공유되지 않은 DP Plan입니다. VMD가 공유하면 이 주소에서 확인할 수 있습니다.</section>';
+        return;
+    }
+
+    task = loadedTask;
     state.status = task.status;
     state.instruction = task.plan.instruction || '';
 
