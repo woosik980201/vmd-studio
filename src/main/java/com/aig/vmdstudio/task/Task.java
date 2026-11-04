@@ -218,7 +218,7 @@ public class Task {
     public void sharePlan() {
         requireAdopted();
         if (this.status != TaskStatus.REVIEWED) {
-            throw new IllegalStateException("검토 완료 상태에서만 매장에 공유할 수 있습니다.");
+            throw new IllegalStateException("작성 완료 상태에서만 매장에 공유할 수 있습니다.");
         }
         this.status = TaskStatus.SHARED;
     }

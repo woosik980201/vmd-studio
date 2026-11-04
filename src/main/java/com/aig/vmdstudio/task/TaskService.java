@@ -19,6 +19,9 @@ import java.util.List;
 @Transactional(readOnly = true)
 public class TaskService {
 
+    // AnyDoor 결과만 파일로 저장된다. Mock 예시 이미지(/mock/...)는 지우지 않는다
+    private static final String PREVIEW_URL_PREFIX = "/api/previews/";
+
     private final TaskRepository taskRepository;
     private final ImageStorageService imageStorage;
     private final PreviewGenerator previewGenerator; // 지금은 MockPreviewGenerator가 들어온다
@@ -84,6 +87,28 @@ public class TaskService {
         }
         task.finishSetup();
         return task; // @Transactional 안에서 바뀐 값은 끝날 때 자동으로 DB에 반영된다
+    }
+
+    /**
+     * Dashboard: 작업 삭제 (D26). 되돌릴 수 없으므로 확인은 화면에서 받는다.
+     * 공유 완료 작업도 지울 수 있다 (화면에서 직원 화면도 사라진다고 안내).
+     * DB에서 먼저 지운 뒤 이 작업의 사진과 현재 Preview 파일을 지운다.
+     */
+    @Transactional
+    public void delete(Long id) {
+        Task task = findById(id);
+        String storePhoto = task.getStorePhotoFile();
+        String productImage = task.getProductImageFile();
+        String previewUrl = task.getPreviewImageUrl();
+
+        taskRepository.delete(task);
+        taskRepository.flush();
+
+        imageStorage.deleteQuietly(storePhoto);
+        imageStorage.deleteQuietly(productImage);
+        if (previewUrl != null && previewUrl.startsWith(PREVIEW_URL_PREFIX)) {
+            imageStorage.deleteQuietly(previewUrl.substring(PREVIEW_URL_PREFIX.length()));
+        }
     }
 
     /** DP Editor: 변경 영역 저장 */

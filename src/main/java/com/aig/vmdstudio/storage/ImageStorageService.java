@@ -94,6 +94,25 @@ public class ImageStorageService {
         }
     }
 
+    /**
+     * 저장된 파일을 지운다 (작업 삭제 시). 이미 없으면 그대로 지나간다.
+     * 파일 하나를 못 지웠다고 작업 삭제 전체를 실패시키지는 않는다. 업로드 폴더 밖은 지우지 않는다.
+     */
+    public void deleteQuietly(String fileName) {
+        if (fileName == null || fileName.isBlank()) {
+            return;
+        }
+        Path path = uploadDir.resolve(fileName).normalize();
+        if (!path.startsWith(uploadDir)) {
+            return;
+        }
+        try {
+            Files.deleteIfExists(path);
+        } catch (IOException ignored) {
+            // 남은 파일은 화면에 영향을 주지 않는다
+        }
+    }
+
     /** 확장자로 응답의 이미지 형식을 정한다 */
     public MediaType mediaTypeOf(String fileName) {
         return fileName.endsWith(".png") ? MediaType.IMAGE_PNG : MediaType.IMAGE_JPEG;
