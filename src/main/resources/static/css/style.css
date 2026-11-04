@@ -143,6 +143,7 @@ h1 {
 .task-table .task-action {
     width: 60px;
     text-align: right;
+    white-space: nowrap;
 }
 
 .task-table .task-delete {
