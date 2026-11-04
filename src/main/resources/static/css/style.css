@@ -821,7 +821,7 @@ h1 {
     --mat: #efeadf;
     --caution-tint: #f6ecd2;
     --done-tint: #e4eedf;
-    --serif: "Instrument Serif", "Gowun Batang", serif;
+    --serif: "Instrument Serif", "Pretendard", serif;
     --narrow: "Sofia Sans Extra Condensed", "Pretendard", sans-serif;
 }
 
@@ -929,10 +929,20 @@ h1 {
 }
 
 .section-title {
-    font-family: var(--serif);
-    font-size: 28px;
-    font-weight: 400;
-    line-height: 1.2;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+/* 큰 제목은 영어, 한글은 그 아래 작은 설명으로 둔다 */
+.title-ko {
+    display: block;
+    margin-top: 8px;
+    font-family: "Pretendard", sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    line-height: 1.5;
+    letter-spacing: 0;
+    color: var(--muted);
 }
 
 .field input[type="text"],
