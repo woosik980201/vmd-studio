@@ -37,7 +37,8 @@ body {
     font-size: 15px;
     line-height: 1.5;
     color: var(--ink);
-    background: var(--wall);
+    /* 벽 위쪽에서 내려오는 매장 조명 */
+    background: radial-gradient(ellipse 900px 460px at 50% 60px, #ffffff, transparent) no-repeat, var(--wall);
     -webkit-font-smoothing: antialiased;
 }
 
@@ -50,7 +51,8 @@ body {
    아래 굵은 선을 행거 봉처럼 두고, 현재 단계가 그 선 위에 걸린다 */
 .app-header {
     background: var(--paper);
-    border-bottom: 1px solid var(--ink);
+    position: relative;
+    border-bottom: 3px solid var(--ink);
     padding: 18px 40px 0;
 }
 
@@ -99,17 +101,36 @@ body {
     padding-bottom: 10px;
 }
 
+/* 현재 단계: 행거 봉에 걸린 행택. 위쪽 모서리를 잘라 태그 모양을 만들고 구멍을 뚫는다 */
 .step.is-current {
-    color: var(--ink);
+    position: relative;
+    z-index: 1;
+    top: 24px;
+    margin-top: -6px;
+    padding: 22px 16px 12px;
+    background: var(--action);
+    color: #fff;
     font-weight: 700;
-    box-shadow: inset 0 -4px 0 var(--action);
+    clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 0 100%, 0 14px);
+}
+
+.step.is-current::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 8px;
+    height: 8px;
+    margin-left: -4px;
+    border-radius: 50%;
+    background: var(--ink);
 }
 
 /* ---------- 페이지 공통 ---------- */
 .page {
     max-width: 1180px;
     margin: 0 auto;
-    padding: 64px 40px 88px;
+    padding: 80px 40px 96px;
 }
 
 .page-title-row {
@@ -122,10 +143,10 @@ body {
 
 h1 {
     margin: 0;
-    font-size: 44px;
-    font-weight: 700;
-    line-height: 1.15;
-    letter-spacing: -0.03em;
+    font-size: clamp(40px, 5vw, 64px);
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
 }
 
 .note {
@@ -174,13 +195,27 @@ h1 {
 }
 
 /* ---------- 상태 배지 ---------- */
+/* 상태 배지도 작은 행택 모양 */
 .badge {
+    position: relative;
     display: inline-block;
-    padding: 3px 10px;
-    border-radius: 999px;
+    padding: 4px 12px 4px 22px;
     font-size: 12px;
     font-weight: 600;
     white-space: nowrap;
+    clip-path: polygon(9px 0, 100% 0, 100% 100%, 9px 100%, 0 50%);
+}
+
+.badge::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    width: 5px;
+    height: 5px;
+    margin-top: -2.5px;
+    border-radius: 50%;
+    background: #fff;
 }
 
 .badge-IN_PROGRESS { background: var(--mat); color: var(--ink); }
@@ -551,6 +586,16 @@ h1 {
     aspect-ratio: 4 / 5;
 }
 
+/* Preview 결과를 처음 볼 때 한 번만, 쇼윈도 가림막이 걷히듯 나타난다 */
+.image-grid.cols-2 .image-panel:nth-child(2) img {
+    animation: unveil 900ms cubic-bezier(0.65, 0, 0.2, 1) both;
+}
+
+@keyframes unveil {
+    from { clip-path: inset(0 100% 0 0); }
+    to { clip-path: inset(0 0 0 0); }
+}
+
 /* ---------- 생성 조건 요약 ---------- */
 .condition-row {
     display: flex;
@@ -781,7 +826,7 @@ h1 {
 /* ---------- 좁은 화면 ---------- */
 @media (max-width: 760px) {
     .app-header { padding: 14px 16px 0; }
-    .page { padding: 32px 16px 48px; }
+    .page { padding: 56px 16px 48px; }
     h1 { font-size: 30px; }
     .card { padding: 20px; }
     .notice { font-size: 15px; }
@@ -797,5 +842,5 @@ h1 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-    * { transition: none !important; }
+    * { transition: none !important; animation: none !important; }
 }
