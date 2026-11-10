@@ -115,7 +115,7 @@ async function loadExistingTask() {
     productColorInput.value = task.product.color || '';
     vmdMemoInput.value = task.product.memo || '';
 
-    showImage(document.getElementById('store-photo-preview'), task.storePhotoUrl, '저장된 매장 사진');
+    showImage(document.getElementById('store-photo-preview'), task.storePhotoUrl, '저장된 인물 사진');
     showImage(document.getElementById('product-image-preview'), task.product.imageUrl, '저장된 상품 이미지');
     savedImages.storePhoto = Boolean(task.storePhotoUrl);
     savedImages.productImage = Boolean(task.product.imageUrl);

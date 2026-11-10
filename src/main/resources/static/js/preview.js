@@ -60,7 +60,7 @@ async function init() {
     });
 
     const [beforeSlot, afterSlot] = document.querySelectorAll('.image-grid .image-placeholder');
-    showImage(beforeSlot, task.storePhotoUrl, '현재 매장 사진 (Before)');
+    showImage(beforeSlot, task.storePhotoUrl, '인물 사진 (Before)');
     showImage(afterSlot, task.preview.imageUrl, 'AI Preview 결과 (After)');
     renderEngineNotice(task.preview.imageUrl);
 
