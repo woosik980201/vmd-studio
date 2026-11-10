@@ -52,7 +52,7 @@ public class TaskService {
     public Task create(SetupForm form, MultipartFile storePhoto, MultipartFile productImage) {
         requireText(form.productName(), "상품명");
         requireText(form.productCode(), "품번");
-        requireFile(storePhoto, "현재 매장 사진");
+        requireFile(storePhoto, "인물 사진");
         requireFile(productImage, "실제 상품 이미지");
 
         Task task = new Task(form.name(), form.storeName(),
@@ -83,7 +83,7 @@ public class TaskService {
             task.replaceProductImage(imageStorage.store(productImage));
         }
         if (!task.hasImages()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "현재 매장 사진과 실제 상품 이미지가 모두 필요합니다.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "인물 사진과 실제 상품 이미지가 모두 필요합니다.");
         }
         task.finishSetup();
         return task; // @Transactional 안에서 바뀐 값은 끝날 때 자동으로 DB에 반영된다
@@ -128,7 +128,7 @@ public class TaskService {
     public Task generatePreview(Long id) {
         Task task = findById(id);
         if (!task.hasImages() || task.getPlacement() == null) {
-            throw new IllegalStateException("매장 사진, 상품 이미지, 영역이 모두 있어야 Preview를 만들 수 있습니다.");
+            throw new IllegalStateException("인물 사진, 상품 이미지, 영역이 모두 있어야 Preview를 만들 수 있습니다.");
         }
 
         PreviewRequest request = new PreviewRequest(

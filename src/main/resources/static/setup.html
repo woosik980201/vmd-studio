@@ -11,17 +11,16 @@
 
 <main class="page">
     <div class="page-title-row">
-        <h1>Store Setup<span class="title-ko">매장 사진과 상품 등록</span></h1>
+        <h1>Store Setup<span class="title-ko">인물 사진과 상품 등록</span></h1>
     </div>
 
-    <!-- 적용 범위와 입력 가이드 (D24, 10/29~31 품질 실험 결과) -->
+    <!-- 적용 범위와 입력 가이드 (D24 → D28·D29, 11/9~10 인물 착용 실험 P01~P04·R1·R2b 결과, D30) -->
     <section class="notice guide">
-        <strong>AI Preview는 정면 진열 자리(페이스아웃 · 마네킹)에 맞춰져 있습니다.</strong>
-        옆으로 겹쳐 걸린 행거 진열은 결과가 부정확할 수 있습니다.
+        <strong>AI Preview는 직원·모델이 상품을 입은 모습을 미리 보는 용도입니다.</strong>
         <ol>
             <li>상품 사진은 <strong>정면 사진</strong>을 사용해 주세요 (흰 배경 권장).</li>
-            <li>다음 단계에서 영역은 <strong>바꿀 상품 하나만, 상품 모양에 가깝게</strong> 지정해 주세요.</li>
-            <li>마네킹은 <strong>머리부터 받침대까지 전체</strong>가 나오게 찍어 주세요.</li>
+            <li>인물 사진은 <strong>정면으로 서서 팔을 몸 옆에 내린 자세</strong>로, <strong>상반신 사진을 권장</strong>합니다. 전신 사진은 목 부분에 경계가 생길 수 있습니다.</li>
+            <li>원래 입은 옷의 색·포켓·소매 길이는 상관없습니다 (긴팔 → 반팔도 가능).</li>
         </ol>
     </section>
 
@@ -40,11 +39,11 @@
     <!-- 매장 사진 1장 + 적용 상품 1개 (1 Task 기준) -->
     <section class="two-column">
         <div class="card">
-            <h2 class="section-title">현재 매장 사진 <span class="required">*</span></h2>
+            <h2 class="section-title">인물 사진 <span class="required">*</span></h2>
             <label class="image-drop" id="store-photo-preview" for="store-photo">
           <span>
-            클릭해서 현재 VM/DP 사진 선택<br>
-            <span class="hint">jpg · png, 10MB 이하 · 정면에서 찍은 사진</span>
+            클릭해서 인물 사진 선택<br>
+            <span class="hint">jpg · png, 10MB 이하 · 정면 · 상반신 권장</span>
           </span>
             </label>
             <input type="file" id="store-photo" accept=".jpg,.jpeg,.png" hidden>

@@ -345,12 +345,12 @@ function setPhotoReady(ready) {
 function showStorePhoto(url) {
     if (!url) {
         document.getElementById('photo-message').textContent =
-            '등록된 매장 사진이 없습니다. 이전 단계(등록)에서 사진을 올려주세요.';
+            '등록된 인물 사진이 없습니다. 이전 단계(등록)에서 사진을 올려주세요.';
         return;
     }
 
     const placeholder = photoCanvas.querySelector('.photo-placeholder');
-    showImage(placeholder, url, '현재 매장 사진');
+    showImage(placeholder, url, '인물 사진');
 
     const img = placeholder.querySelector('img');
     img.addEventListener('load', () => {
@@ -359,7 +359,7 @@ function showStorePhoto(url) {
         setPhotoReady(true);
     });
     img.addEventListener('error', () => {
-        placeholder.innerHTML = '<span>매장 사진을 불러오지 못했습니다. 새로고침해 주세요.</span>';
+        placeholder.innerHTML = '<span>인물 사진을 불러오지 못했습니다. 새로고침해 주세요.</span>';
         setPhotoReady(false);
     });
 }

@@ -14,13 +14,14 @@
         <h1>Select Area<span class="title-ko">변경 영역 지정</span></h1>
     </div>
 
-    <!-- 안내 문구 (화면 기능 명세 v0.2 확정 문구 + 10/31 입력 가이드, D24) -->
+    <!-- 안내 문구 (화면 기능 명세 v0.2 확정 문구 + 인물 착용 영역 안내, D30: P03·R2·R2b 결과) -->
     <section class="notice">
         교체하거나 배치할 영역을 지정해주세요.<br>
         영역의 위치와 크기는 Preview 결과에 영향을 줄 수 있습니다.
         <ul class="guide-list">
-            <li>바꿀 상품 <strong>하나만</strong> 감싸 주세요. 옷걸이·후크는 영역에서 빼 주세요.</li>
-            <li>영역은 <strong>상품 모양(가로·세로 비율)에 가깝게</strong> 그려 주세요. AI는 영역을 그대로 채우기 때문에, 영역이 상품보다 길면 옷도 길게 늘어납니다.</li>
+            <li>영역은 <strong>목선부터 밑단까지, 소매 끝이 모두 들어가게</strong> 그려 주세요. 몸통만 잡으면 소매가 원래 옷으로 남습니다.</li>
+            <li>영역 위쪽은 <strong>옷의 목선에 맞춰 주세요.</strong> 얼굴·턱까지 올라가면 경계선이 생깁니다.</li>
+            <li>결과의 핏은 <strong>상품 사진 모양을 따라갑니다.</strong> 색과 실루엣을 비교하는 용도로 봐 주세요.</li>
         </ul>
     </section>
 
@@ -29,7 +30,7 @@
         <div class="card">
             <div class="photo-canvas is-disabled" id="photo-canvas">
                 <div class="photo-placeholder">
-                    <span id="photo-message">매장 사진 불러오는 중...</span>
+                    <span id="photo-message">인물 사진 불러오는 중...</span>
                 </div>
                 <!-- 지정한 영역: 안쪽을 끌면 이동, 네 모서리를 끌면 크기 조절 -->
                 <div class="region-box" id="region-box" hidden>

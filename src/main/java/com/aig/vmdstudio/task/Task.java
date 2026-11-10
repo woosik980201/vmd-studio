@@ -159,7 +159,7 @@ public class Task {
     public void applyPreview(String imageUrl) {
         requireNotShared();
         if (!hasImages() || placement == null) {
-            throw new IllegalStateException("매장 사진, 상품 이미지, 영역이 모두 있어야 Preview를 만들 수 있습니다.");
+            throw new IllegalStateException("인물 사진, 상품 이미지, 영역이 모두 있어야 Preview를 만들 수 있습니다.");
         }
         this.previewImageUrl = imageUrl;
         this.previewAdopted = false;
