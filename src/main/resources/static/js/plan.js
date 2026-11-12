@@ -22,6 +22,8 @@ const saveStatus = document.getElementById('save-status');
 const backToPreviewLink = document.getElementById('back-to-preview-link');
 const ownerBar = document.getElementById('owner-bar');
 const unshareButton = document.getElementById('unshare-button');
+// [직원 화면 보기]: 공유 완료 후 직원이 보는 화면(mode=view)을 연다. 공유 전에는 [직원 화면 미리보기]를 쓴다
+document.getElementById('staff-view-link').href = `/plan.html?taskId=${taskId}&mode=view`;
 
 // ----- 화면 상태 -----
 // status      : 작업 상태 (IN_PROGRESS / REVIEWED / SHARED)
